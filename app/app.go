@@ -15,6 +15,16 @@ import (
 )
 
 var db *sql.DB
+type NoSuchUserError struct {}
+type NoMatchingPasswordError struct {}
+
+func (e *NoSuchUserError) Error() string {
+  return "No such userid in DB."
+}
+
+func (e *NoMatchingPasswordError) Error() string {
+  return "Password unmatched."
+}
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
@@ -42,10 +52,10 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
   err = checkUserPw(userid, string(hash))
   if err != nil {
     switch err.(type) {
-    case models.NoSuchUserError:
+    case *NoSuchUserError:
       w.WriteHeader(http.StatusBadRequest)
       w.Write([]byte("Such user does not exist."))
-    case models.NoMatchingPasswordError:
+    case *NoMatchingPasswordError:
       w.WriteHeader(http.StatusBadRequest)
       w.Write([]byte("Wrong password."))
     default:
@@ -66,14 +76,14 @@ func checkUserPw(userid string, pwhash string) (error){
 
   if err != nil {
     if err == sql.ErrNoRows {
-      return &models.NoSuchUserError{}
+      return &NoSuchUserError{}
     } else {
       return errors.New("Unknown Error")
     }
   }
 
   if user.PWHash != pwhash {
-    return &models.NoMatchingPasswordError{}
+    return &NoMatchingPasswordError{}
   }
   return nil
 }

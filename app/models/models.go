@@ -1,13 +1,13 @@
 package models
 
+type NoSuchUserError struct {}
+type NoMatchingPasswordError struct {}
 type User struct {
   UserID string `json:"userid"`
   PWHash string `json:"pwhash"`
   Attribute int `json:"attribute"`
 }
 
-type NoSuchUserError struct {}
-type NoMatchingPasswordError struct {}
 
 func (e *NoSuchUserError) Error() string {
   return "No such userid in DB."
