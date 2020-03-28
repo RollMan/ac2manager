@@ -1,13 +1,18 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var db *sql.DB
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
@@ -34,6 +39,13 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	{
+		dsn := fmt.Sprintf("%s:%s@ac2", os.Getenv("AC2_DB_USERNAME"), os.Getenv("AC2_DB_PASSWORD"))
+		var err error
+		db, err := sql.Open("mysql", dsn)
+		log.Fatal(db)
+		log.Fatal(err)
+	}
 	fmt.Printf("Hello World\n")
 	r := mux.NewRouter()
 	r.HandleFunc("/", rootHandler)
