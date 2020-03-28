@@ -1,4 +1,4 @@
-### https://raw.github.com/github/gitignore/e931ef7f3e7d8f7aa0e784c14bd291ad4448b1ab/Go.gitignore
+### https://raw.github.com/github/gitignore/c68eb91e0a72ca1efba128c33de9caea41281f19/Go.gitignore
 
 # Binaries for programs and plugins
 *.exe
@@ -7,13 +7,11 @@
 *.so
 *.dylib
 
-# Test binary, built with `go test -c`
+# Test binary, build with `go test -c`
 *.test
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
 
-
+.env

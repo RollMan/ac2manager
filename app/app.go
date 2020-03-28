@@ -40,17 +40,25 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	{
-		dsn := fmt.Sprintf("%s:%s@ac2", os.Getenv("AC2_DB_USERNAME"), os.Getenv("AC2_DB_PASSWORD"))
+    defer db.Close()
+		dsn := fmt.Sprintf("%s:%s@/ac2?charset=utf8", os.Getenv("AC2_DB_USERNAME"), os.Getenv("AC2_DB_PASSWORD"))
 		var err error
 		db, err := sql.Open("mysql", dsn)
-		log.Fatal(db)
-		log.Fatal(err)
+    if err != nil {
+      log.Fatal(err)
+    }
+    err = db.Ping()
+    if err != nil {
+      log.Fatal(err)
+    }
 	}
+
 	fmt.Printf("Hello World\n")
 	r := mux.NewRouter()
 	r.HandleFunc("/", rootHandler)
 	r.HandleFunc("/login", loginGetHandler).Methods("GET")
 	r.HandleFunc("/login", loginPostHandler).Methods("POST")
 	// r.HandleFunc("/admin", AuthMiddle)
-	log.Fatal(http.ListenAndServe(":8000", r))
+  
+	// log.Fatal(http.ListenAndServe(":8000", r))
 }
