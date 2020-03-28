@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+  "errors"
 
   "github.com/RollMan554/ac2manager/app/models"
 	_ "github.com/go-sql-driver/mysql"
@@ -25,9 +26,10 @@ func loginGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func loginPostHandler(w http.ResponseWriter, r *http.Request) {
+  var err error
 
 	r.ParseForm()
-	id := r.PostForm.Get("id")
+	userid := r.PostForm.Get("userid")
 	pw := r.PostForm.Get("pw")
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(pw), 10)
@@ -37,24 +39,43 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("%s %s", id, hash)
-
+  err = checkUserPw(userid, string(hash))
+  if err != nil {
+    switch err.(type) {
+    case models.NoSuchUserError:
+      w.WriteHeader(http.StatusBadRequest)
+      w.Write([]byte("Such user does not exist."))
+    case models.NoMatchingPasswordError:
+      w.WriteHeader(http.StatusBadRequest)
+      w.Write([]byte("Wrong password."))
+    default:
+      w.WriteHeader(http.StatusInternalServerError)
+      w.Write([]byte("Unknown error. Contact administrator."))
+    }
+    return
+  }
+  w.WriteHeader(http.StatusOK)
+  w.Write([]byte("WIP"))
 }
 
-func checkUserPw(id []byte, pw []byte){
+func checkUserPw(userid string, pwhash string) (error){
   var user models.User
   var err error
-  row := db.QueryRow("SELECT * FROM users WHERE userid=?;", id)
+  row := db.QueryRow("SELECT * FROM users WHERE userid=?;", userid)
   err = row.Scan(&user.UserID, &user.PWHash, &user.Attribute)
 
   if err != nil {
     if err == sql.ErrNoRows {
-      fmt.Printf("No such user: %s\n", id)
+      return &models.NoSuchUserError{}
     } else {
-      log.Fatal(err)
+      return errors.New("Unknown Error")
     }
   }
-  fmt.Printf("PW: %s %d\n", user.PWHash, user.Attribute)
+
+  if user.PWHash != pwhash {
+    return &models.NoMatchingPasswordError{}
+  }
+  return nil
 }
 
 func main() {
@@ -72,8 +93,6 @@ func main() {
       log.Fatal(err)
     }
     fmt.Print("DB OK")
-    checkUserPw([]byte("admin"), []byte("password"))
-    os.Exit(0)
 	}
 
 	fmt.Printf("Hello World\n")
