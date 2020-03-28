@@ -1,4 +1,4 @@
-FROM mysql
+FROM mariadb
 
 EXPOSE 3306
 

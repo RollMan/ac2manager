@@ -3,7 +3,7 @@ use ac2;
 
 CREATE TABLE users (
   userid VARCHAR(255) not null,
-  pwhash VARCHAR(255) not null,
+  pwhash BINARY(60) not null,
   attribute INT default 0,
   primary key (userid)
 );
