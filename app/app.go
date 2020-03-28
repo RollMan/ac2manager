@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
   "errors"
+  "encoding/json"
 
   "github.com/RollMan554/ac2manager/app/models"
 	_ "github.com/go-sql-driver/mysql"
@@ -15,16 +16,6 @@ import (
 )
 
 var db *sql.DB
-type NoSuchUserError struct {}
-type NoMatchingPasswordError struct {}
-
-func (e *NoSuchUserError) Error() string {
-  return "No such userid in DB."
-}
-
-func (e *NoMatchingPasswordError) Error() string {
-  return "Password unmatched."
-}
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
@@ -37,25 +28,23 @@ func loginGetHandler(w http.ResponseWriter, r *http.Request) {
 
 func loginPostHandler(w http.ResponseWriter, r *http.Request) {
   var err error
+  var req_json models.Login
+  if err := json.NewDecoder(r.Body).Decode(&req_json); err != nil {
+    w.WriteHeader(http.StatusInternalServerError)
+    w.Write([]byte(fmt.Sprintf("Unknown error. Couldn't decode JSON.\n%s\n", err)))
+    return
+  }
 
-	r.ParseForm()
-	userid := r.PostForm.Get("userid")
-	pw := r.PostForm.Get("pw")
+  userid := req_json.UserID
+  pw := req_json.Password
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(pw), 10)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(""))
-		return
-	}
-
-  err = checkUserPw(userid, string(hash))
+  err = checkUserPw([]byte(userid), []byte(pw))
   if err != nil {
     switch err.(type) {
-    case *NoSuchUserError:
+    case *models.NoSuchUserError:
       w.WriteHeader(http.StatusBadRequest)
       w.Write([]byte("Such user does not exist."))
-    case *NoMatchingPasswordError:
+    case *models.NoMatchingPasswordError:
       w.WriteHeader(http.StatusBadRequest)
       w.Write([]byte("Wrong password."))
     default:
@@ -68,7 +57,7 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
   w.Write([]byte("WIP"))
 }
 
-func checkUserPw(userid string, pwhash string) (error){
+func checkUserPw(userid []byte, pw []byte) (error){
   var user models.User
   var err error
   row := db.QueryRow("SELECT * FROM users WHERE userid=?;", userid)
@@ -76,14 +65,14 @@ func checkUserPw(userid string, pwhash string) (error){
 
   if err != nil {
     if err == sql.ErrNoRows {
-      return &NoSuchUserError{}
+      return &models.NoSuchUserError{}
     } else {
       return errors.New("Unknown Error")
     }
   }
 
-  if user.PWHash != pwhash {
-    return &NoMatchingPasswordError{}
+  if err := bcrypt.CompareHashAndPassword([]byte(user.PWHash), pw); err != nil {
+    return &models.NoMatchingPasswordError{}
   }
   return nil
 }
@@ -105,12 +94,11 @@ func main() {
     fmt.Print("DB OK")
 	}
 
-	fmt.Printf("Hello World\n")
 	r := mux.NewRouter()
 	r.HandleFunc("/", rootHandler)
 	r.HandleFunc("/login", loginGetHandler).Methods("GET")
 	r.HandleFunc("/login", loginPostHandler).Methods("POST")
 	// r.HandleFunc("/admin", AuthMiddle)
   
-	// log.Fatal(http.ListenAndServe(":8000", r))
+	log.Fatal(http.ListenAndServe(":8000", r))
 }
