@@ -1,0 +1,39 @@
+{{define "upcoming"}}
+
+<p>{{.Startdate}}</p>
+<ul>
+  <li>Track: {{.Track}}</li>
+  <li>Weather randomness: {{.WeatherRandomness}}/10</li>
+  <li>The number of tyre sets: {{.TyreSetCount}}</li>
+  <li>Practice:
+    <ul class="upcoming_race_rule">
+      <li>Duration: {{.P_sessionDurationMinute}} min.</li>
+      <li>Time multiplier: &times;{{.P_timeMultiplier}}</li>
+      <li>Hour of day in game: {{.P_hourOfDay}}</li>
+    </ul>
+  </li>
+  <li>Qualify:
+    <ul class="upcoming_race_rule">
+      <li>Duration: {{.Q_sessionDurationMinute}} min.</li>
+      <li>Time multiplier: &times;{{.Q_timeMultiplier}}</li>
+      <li>Hour of day in game: {{.Q_hourOfDay}}</li>
+    </ul>
+  </li>
+  <li>Race:
+    <ul class="upcoming_race_rule">
+      <li>Duration: {{.R_sessionDurationMinute}} min.</li>
+      <li>Time multiplier: &times;{{.R_timeMultiplier}}</li>
+      <li>Hour of day in game: {{.R_hourOfDay}}</li>
+    </ul>
+    <li>Pit rule:
+      <ul class="upcoming_race_rule">
+        <li>Mandatory pit count: {{.MandatoryPitstopCount}}</li>
+        <li>Pit window length: {{.PitWindowLengthSec}} sec.</li>
+        <li>Refuelling allowed?: {{.IsRefuellingAllowedInRace}}</li>
+        <li>Refuelling required?: {{.IsMandatoryPitstopRefuellingRequired}} </li>
+        <li>Tyre change required?: {{.IsMandatoryPitstopTyreChangeRequired}} </li>
+        <li>Driver swap required?: {{.IsMandatoryPitstopSwapDriverRequired}} </li>
+      </ul>
+    </li>
+</ul>
+{{end}}

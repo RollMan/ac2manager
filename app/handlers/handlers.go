@@ -56,31 +56,46 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
   // SELECT * FROM events WHERE events.startdate >= CONVERT('1999-01-00', DATETIME) ORDER BY startdate DESC;
   var event models.Event
   now := time.Now()
-  columns := "id, startdate, weatherRandomness, P_hourOfDay, P_timeMultiplier, P_sessionDurationMinute, Q_hourOfDay, Q_timeMultiplier, Q_sessionDurationMinute, R_hourOfDay, R_timeMultiplier, R_sessionDurationMinute, pitWindowLengthSec, isRefuellingAllowedInRace, mandatoryPitstopCount, isMandatoryPitstopRefuellingRequired, isMandatoryPitstopTyreChangeRequired, isMandatoryPitstopSwapDriverRequired, tyreSetCount"
-	row := db.Db.QueryRow(fmt.Sprintf("SELECT %s FROM events WHERE events.startdate >= CONVERT(?, DATETIME) ORDER BY startdate DESC;", columns), now)
+  columns := "id, startdate, track, weatherRandomness, P_hourOfDay, P_timeMultiplier, P_sessionDurationMinute, Q_hourOfDay, Q_timeMultiplier, Q_sessionDurationMinute, R_hourOfDay, R_timeMultiplier, R_sessionDurationMinute, pitWindowLengthSec, isRefuellingAllowedInRace, mandatoryPitstopCount, isMandatoryPitstopRefuellingRequired, isMandatoryPitstopTyreChangeRequired, isMandatoryPitstopSwapDriverRequired, tyreSetCount"
+	row := db.Db.QueryRow(fmt.Sprintf("SELECT %s FROM events WHERE events.startdate >= CONVERT(?, DATETIME) ORDER BY startdate ASC;", columns), now)
   err := row.Scan(&event.Id, &event.Startdate, &event.Track, &event.WeatherRandomness, &event.P_hourOfDay, &event.P_timeMultiplier, &event.P_sessionDurationMinute, &event.Q_hourOfDay, &event.Q_timeMultiplier, &event.Q_sessionDurationMinute, &event.R_hourOfDay, &event.R_timeMultiplier, &event.R_sessionDurationMinute, &event.PitWindowLengthSec, &event.IsRefuellingAllowedInRace, &event.MandatoryPitstopCount, &event.IsMandatoryPitstopRefuellingRequired, &event.IsMandatoryPitstopTyreChangeRequired, &event.IsMandatoryPitstopSwapDriverRequired, &event.TyreSetCount)
 
-  var eventConfigureString string
+
+  jst := time.FixedZone("JST", 9*60*60)
+  event.Startdate = event.Startdate.In(jst)
+
+  var isNextRace bool = true
   if err != nil {
     if err == sql.ErrNoRows {
-      eventConfigureString = models.NoEvent
+      isNextRace = false
     }else{
       returnInternalServerError(w, err)
     }
-  }else{
-    eventConfigureString = fmt.Sprintf(models.EventConfigure, event.Startdate, event.Track, event.WeatherRandomness, event.TyreSetCount, event.P_sessionDurationMinute, event.P_timeMultiplier, event.P_hourOfDay, event.Q_sessionDurationMinute, event.Q_timeMultiplier, event.Q_hourOfDay, event.R_sessionDurationMinute, event.R_timeMultiplier, event.R_hourOfDay, event.MandatoryPitstopCount, event.PitWindowLengthSec, event.IsRefuellingAllowedInRace, event.IsMandatoryPitstopRefuellingRequired, event.IsMandatoryPitstopTyreChangeRequired, event.IsMandatoryPitstopSwapDriverRequired)
   }
 
-  data := map[string]string{
-    "EventConfigure": eventConfigureString,
-  }
-  t := template.Must(template.ParseFiles("./template/index.html"))
   var writeBuf bytes.Buffer
-  err = t.Execute(&writeBuf, data)
-  if err != nil {
-    returnInternalServerError(w, err)
-    return
+  if isNextRace {
+    data := models.NextRaceData{
+      event,
+      "SERVER STATUS ICON",
+      "SERVER STATUS STATEMENT",
+    }
+    t := template.Must(template.ParseFiles("./template/index.html", "./template/upcoming_race_configure.html"))
+    err = t.Execute(&writeBuf, data)
+    if err != nil {
+      returnInternalServerError(w, err)
+      return
+    }
+  }else{
+    data := map[string]string{}
+    t := template.Must(template.ParseFiles("./template/index.html", "./template/no_upcoming_race.html"))
+    err = t.Execute(&writeBuf, data)
+    if err != nil {
+      returnInternalServerError(w, err)
+      return
+    }
   }
+
   w.WriteHeader(http.StatusOK)
   w.Write(writeBuf.Bytes())
 }

@@ -32,6 +32,12 @@ type Event struct {
   TyreSetCount                          int
 }
 
+type NextRaceData struct {
+  Event
+  ServerStatusIcon string "WIP(SERVER STATUS ICON)"
+  ServerStatusStatement string "WIP(SERVER STATUS STATEMENT)"
+}
+
 type User struct {
   UserID    []byte `json:"userid"`
   PWHash    []byte `json:"pwhash"`

@@ -15,7 +15,7 @@ import (
 func main() {
   log.Print("Server started.")
 	{
-		dsn := fmt.Sprintf("%s:%s@/ac2?charset=utf8", os.Getenv("AC2_DB_USERNAME"), os.Getenv("AC2_DB_PASSWORD"))
+		dsn := fmt.Sprintf("%s:%s@/ac2?charset=utf8&parseTime=true", os.Getenv("AC2_DB_USERNAME"), os.Getenv("AC2_DB_PASSWORD"))
 		db.InitDB(dsn)
     log.Print("DB OK.")
 	}
