@@ -62,42 +62,8 @@
 
               <section>
                 <h2>Upcoming Event</h2>
+                {{.EventConfigure}}
                 <p>{{.EventDate}}</p>
-                <ul>
-                  <li>Track: {{.Track}}</li>
-                  <li>Weather randomness: {{.weatherRandomness}}/10</li>
-                  <li>The number of tyre sets: {{.tyreSetCount}}</li>
-                  <li>Practice:
-                    <ul class="upcoming_race_rule">
-                      <li>Duration: {{.P_sessionDurationMinute}} min.</li>
-                      <li>Time multiplier: &times;{{.P_timeMultiplier}}</li>
-                      <li>Hour of day in game: {{.P_hourOfDay}}</li>
-                    </ul>
-                  </li>
-                  <li>Qualify:
-                    <ul class="upcoming_race_rule">
-                      <li>Duration: {{.Q_sessionDurationMinute}} min.</li>
-                      <li>Time multiplier: &times;{{.Q_timeMultiplier}}</li>
-                      <li>Hour of day in game: {{.Q_hourOfDay}}</li>
-                    </ul>
-                  </li>
-                  <li>Race:
-                    <ul class="upcoming_race_rule">
-                      <li>Duration: {{.R_sessionDurationMinute}} min.</li>
-                      <li>Time multiplier: &times;{{.R_timeMultiplier}}</li>
-                      <li>Hour of day in game: {{.R_hourOfDay}}</li>
-                    </ul>
-                    <li>Pit rule:
-                      <ul class="upcoming_race_rule">
-                        <li>Mandatory pit count: {{.MandatoryPitstopCount}}</li>
-                        <li>Pit window length: {{.pitWindowLengthSec}} sec.</li>
-                        <li>Refuelling allowed?: {{.isRefuellingAllowedInRace}}</li>
-                        <li>Refuelling required?: {{.isMandatoryPitstopRefuellingRequired}} </li>
-                        <li>Tyre change required?: {{.isMandatoryPitstopTyreChangeRequired}} </li>
-                        <li>Driver swap required?: {{.isMandatoryPitstopSwapDriverRequired}} </li>
-                      </ul>
-                    </li>
-                </ul>
               </section>
             </div>
             <div class="col-12 col-12-medium">
