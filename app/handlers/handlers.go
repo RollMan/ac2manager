@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+  "log"
 
 	"github.com/RollMan554/ac2manager/app/db"
 	"github.com/RollMan554/ac2manager/app/models"
@@ -38,6 +39,7 @@ func LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&req_json); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(fmt.Sprintf("Unknown error. Couldn't decode JSON.\n%s\n", err)))
+    log.Printf("ERROR: Couldn't parse JSON in LoginPostHandler. %v", err.Error())
 		return
 	}
 
@@ -51,12 +53,15 @@ func LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 		case *models.NoSuchUserError:
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("Such user does not exist."))
+      log.Printf("ERROR: Login request submitted non-existing user %s. %v", userid, err.Error())
 		case *models.NoMatchingPasswordError:
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("Wrong password."))
+      log.Printf("ERROR: Login request submitted wrong password for user %s. %v", userid, err.Error())
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("Unknown error. Contact administrator."))
+      log.Printf("ERROR: Unknown error when checking password. %v", err.Error())
 		}
 		return
 	}
@@ -78,6 +83,7 @@ func LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Internal Server Error"))
+    log.Printf("ERROR: Error occured when signing JWT. %v", err.Error())
 		return
 	}
 
@@ -114,11 +120,19 @@ func AuthMiddleware(next HttpHandler) http.HandlerFunc {
 			return []byte(os.Getenv("JWT_SIGNING_KEY")), nil
 		})
 
+    if err != nil {
+      w.WriteHeader(http.StatusInternalServerError)
+      w.Write([]byte("Internal Server Error"))
+      log.Printf("ERROR: Failed to parse JWT. %v", err.Error())
+      return
+    }
+
 		if claims, ok := token.Claims.(*TokenClaims); ok && token.Valid {
 			next(w, r, claims)
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error()))
+      log.Printf("ERROR: Token was not vaild.")
 		}
 	})
 }
