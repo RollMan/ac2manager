@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+  "time"
 	"os"
   "errors"
   "encoding/json"
@@ -13,6 +14,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
+  jwt "github.com/dgrijalva/jwt-go"
 )
 
 var db *sql.DB
@@ -53,8 +55,32 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
     }
     return
   }
+
+  now := time.Now()
+  claims := &jwt.StandardClaims{
+    ExpiresAt: now.Add(time.Hour * 6).Unix(),
+    IssuedAt: now.Unix(),
+    NotBefore: now.Unix(),
+    Audience: userid,
+  }
+
+  signingKey := []byte(os.Getenv("JWT_SIGNING_KEY")) // Specify in `.env`
+  token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+  ss, err := token.SignedString(signingKey)
+  if err != nil {
+    w.WriteHeader(http.StatusInternalServerError)
+    w.Write([]byte("Internal Server Error"))
+    return
+  }
+
+  cookie := &http.Cookie{
+    Name: "jwt",
+    Value: ss,
+  }
+
+  http.SetCookie(w, cookie)
   w.WriteHeader(http.StatusOK)
-  w.Write([]byte("WIP"))
+  w.Write([]byte("Success!"))
 }
 
 func checkUserPw(userid []byte, pw []byte) (error){
@@ -75,6 +101,11 @@ func checkUserPw(userid []byte, pw []byte) (error){
     return &models.NoMatchingPasswordError{}
   }
   return nil
+}
+
+func adminHandler(w http.ResponseWriter, r *http.Request) {
+  w.WriteHeader(http.StatusOK)
+  w.Write([]byte("Secret admin page")
 }
 
 func main() {
@@ -98,7 +129,7 @@ func main() {
 	r.HandleFunc("/", rootHandler)
 	r.HandleFunc("/login", loginGetHandler).Methods("GET")
 	r.HandleFunc("/login", loginPostHandler).Methods("POST")
-	// r.HandleFunc("/admin", AuthMiddle)
+	r.HandleFunc("/admin", AuthMiddle)
   
 	log.Fatal(http.ListenAndServe(":8000", r))
 }
