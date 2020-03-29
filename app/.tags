@@ -1,0 +1,27 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+AuthMiddleware	app.go	/^func AuthMiddleware(next HttpHandler) http.HandlerFunc {$/;"	f
+Error	models/models.go	/^func (e *NoMatchingPasswordError) Error() string {$/;"	f
+Error	models/models.go	/^func (e *NoSuchUserError) Error() string {$/;"	f
+HttpHandler	app.go	/^type HttpHandler func(http.ResponseWriter, *http.Request, *TokenClaims)$/;"	t
+Login	models/models.go	/^type Login struct {$/;"	t
+NoMatchingPasswordError	models/models.go	/^type NoMatchingPasswordError struct {}$/;"	t
+NoSuchUserError	models/models.go	/^type NoSuchUserError struct {}$/;"	t
+OBJ	Makefile	/^OBJ :=$/;"	m
+SRC	Makefile	/^SRC := $(shell find .\/ -name "*.go")$/;"	m
+TARGET	Makefile	/^TARGET := app$/;"	m
+TokenClaims	app.go	/^type TokenClaims struct {$/;"	t
+User	models/models.go	/^type User struct {$/;"	t
+adminHandler	app.go	/^func adminHandler(w http.ResponseWriter, r *http.Request, t *TokenClaims) {$/;"	f
+checkUserPw	app.go	/^func checkUserPw(userid []byte, pw []byte) (models.User, error) {$/;"	f
+db	app.go	/^var db *sql.DB$/;"	v
+loginGetHandler	app.go	/^func loginGetHandler(w http.ResponseWriter, r *http.Request) {$/;"	f
+loginPostHandler	app.go	/^func loginPostHandler(w http.ResponseWriter, r *http.Request) {$/;"	f
+main	app.go	/^func main() {$/;"	f
+main	app.go	/^package main$/;"	p
+models	models/models.go	/^package models$/;"	p
+rootHandler	app.go	/^func rootHandler(w http.ResponseWriter, r *http.Request) {$/;"	f
