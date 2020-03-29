@@ -22,9 +22,11 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", handlers.RootHandler)
+  r.HandleFunc("/about", handlers.AboutHandler)
 	r.HandleFunc("/login", handlers.LoginGetHandler).Methods("GET")
 	r.HandleFunc("/login", handlers.LoginPostHandler).Methods("POST")
 	r.HandleFunc("/admin", handlers.AuthMiddleware(handlers.AdminHandler))
+	r.NotFoundHandler = http.StripPrefix("/", http.FileServer(http.Dir("static/")))
 
 	log.Fatal(http.ListenAndServe(":8000", r))
 }

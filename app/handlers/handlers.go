@@ -1,11 +1,13 @@
 package handlers
 
 import (
+  "bytes"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+  "html/template"
 	"os"
 	"time"
   "log"
@@ -24,7 +26,33 @@ type TokenClaims struct {
 	jwt.StandardClaims
 }
 
+func returnInternalServerError(w http.ResponseWriter, err error){
+    w.WriteHeader(http.StatusInternalServerError)
+    t_internalServerError := template.Must(template.ParseFiles("./template/StatusInternalServerError.html"))
+    data := map[string]string{
+      "Message": err.Error(),
+    }
+    t_internalServerError.Execute(w, data)
+    log.Print(err.Error())
+    return
+}
+
+func AboutHandler(w http.ResponseWriter, r *http.Request){
+  t := template.Must(template.ParseFiles("./template/about.html"))
+  data := map[string]string{"a":"a"}
+  var writeBuf bytes.Buffer
+  err := t.Execute(&writeBuf, data)
+  if err != nil {
+    returnInternalServerError(w, err)
+    return
+  }
+  w.WriteHeader(http.StatusOK)
+  w.Write(writeBuf.Bytes())
+}
+
+
 func RootHandler(w http.ResponseWriter, r *http.Request) {
+
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Gorilla!\n"))
 }
