@@ -4,24 +4,27 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-AuthMiddleware	app.go	/^func AuthMiddleware(next HttpHandler) http.HandlerFunc {$/;"	f
+AdminHandler	handlers/handlers.go	/^func AdminHandler(w http.ResponseWriter, r *http.Request, t *TokenClaims) {$/;"	f
+AuthMiddleware	handlers/handlers.go	/^func AuthMiddleware(next HttpHandler) http.HandlerFunc {$/;"	f
+Db	db/db.go	/^var Db *sql.DB$/;"	v
 Error	models/models.go	/^func (e *NoMatchingPasswordError) Error() string {$/;"	f
 Error	models/models.go	/^func (e *NoSuchUserError) Error() string {$/;"	f
-HttpHandler	app.go	/^type HttpHandler func(http.ResponseWriter, *http.Request, *TokenClaims)$/;"	t
+HttpHandler	handlers/handlers.go	/^type HttpHandler func(http.ResponseWriter, *http.Request, *TokenClaims)$/;"	t
+InitDB	db/db.go	/^func InitDB(dsn string) {$/;"	f
 Login	models/models.go	/^type Login struct {$/;"	t
+LoginGetHandler	handlers/handlers.go	/^func LoginGetHandler(w http.ResponseWriter, r *http.Request) {$/;"	f
+LoginPostHandler	handlers/handlers.go	/^func LoginPostHandler(w http.ResponseWriter, r *http.Request) {$/;"	f
 NoMatchingPasswordError	models/models.go	/^type NoMatchingPasswordError struct {}$/;"	t
 NoSuchUserError	models/models.go	/^type NoSuchUserError struct {}$/;"	t
 OBJ	Makefile	/^OBJ :=$/;"	m
+RootHandler	handlers/handlers.go	/^func RootHandler(w http.ResponseWriter, r *http.Request) {$/;"	f
 SRC	Makefile	/^SRC := $(shell find .\/ -name "*.go")$/;"	m
 TARGET	Makefile	/^TARGET := app$/;"	m
-TokenClaims	app.go	/^type TokenClaims struct {$/;"	t
+TokenClaims	handlers/handlers.go	/^type TokenClaims struct {$/;"	t
 User	models/models.go	/^type User struct {$/;"	t
-adminHandler	app.go	/^func adminHandler(w http.ResponseWriter, r *http.Request, t *TokenClaims) {$/;"	f
-checkUserPw	app.go	/^func checkUserPw(userid []byte, pw []byte) (models.User, error) {$/;"	f
-db	app.go	/^var db *sql.DB$/;"	v
-loginGetHandler	app.go	/^func loginGetHandler(w http.ResponseWriter, r *http.Request) {$/;"	f
-loginPostHandler	app.go	/^func loginPostHandler(w http.ResponseWriter, r *http.Request) {$/;"	f
+checkUserPw	handlers/handlers.go	/^func checkUserPw(userid []byte, pw []byte) (models.User, error) {$/;"	f
+db	db/db.go	/^package db$/;"	p
+handlers	handlers/handlers.go	/^package handlers$/;"	p
 main	app.go	/^func main() {$/;"	f
 main	app.go	/^package main$/;"	p
 models	models/models.go	/^package models$/;"	p
-rootHandler	app.go	/^func rootHandler(w http.ResponseWriter, r *http.Request) {$/;"	f
