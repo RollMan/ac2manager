@@ -28,7 +28,6 @@ func main() {
 	r.HandleFunc("/login", handlers.LoginGetHandler).Methods("GET")
 	r.HandleFunc("/login", handlers.LoginPostHandler).Methods("POST")
 	r.NotFoundHandler = http.StripPrefix("/", http.FileServer(http.Dir("static/")))
-  r.HandleFunc("/get_events", handlers.EventsHandler)
 
   // Need authentication
 	r.HandleFunc("/admin", handlers.AuthMiddleware(handlers.AdminHandler))

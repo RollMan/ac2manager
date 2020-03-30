@@ -3,7 +3,6 @@ package handlers
 import (
   "bytes"
 	"database/sql"
-  "encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -102,14 +101,23 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginGetHandler(w http.ResponseWriter, r *http.Request) {
-
+  var writeBuf bytes.Buffer
+  t := template.Must(template.ParseFiles("./template/login.html"))
+  err := t.Execute(&writeBuf, nil)
+  if err != nil {
+    returnInternalServerError(w, err)
+    return
+  }
+  w.WriteHeader(http.StatusOK)
+  w.Write(writeBuf.Bytes())
 }
 
 func LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
+  r.ParseForm()
 
-	userid := r.Header.Get("userid")
-	pw := r.Header.Get("pw")
+	userid := r.Form.Get("userid")
+	pw := r.Form.Get("pw")
 
 	var user models.User
 	user, err = checkUserPw([]byte(userid), []byte(pw))
@@ -163,10 +171,30 @@ func LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AdminHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
+  var events []models.Event
+	rows, err := db.Db.Query(fmt.Sprintf("SELECT %s FROM events ORDER BY startdate DESC;", allColumnsOfEvent))
+  if err != nil {
+    returnInternalServerError(w, err)
+  }
+
+
+  for rows.Next() {
+    var event models.Event
+    err := rows.Scan(&event.Id, &event.Startdate, &event.Track, &event.WeatherRandomness, &event.P_hourOfDay, &event.P_timeMultiplier, &event.P_sessionDurationMinute, &event.Q_hourOfDay, &event.Q_timeMultiplier, &event.Q_sessionDurationMinute, &event.R_hourOfDay, &event.R_timeMultiplier, &event.R_sessionDurationMinute, &event.PitWindowLengthSec, &event.IsRefuellingAllowedInRace, &event.MandatoryPitstopCount, &event.IsMandatoryPitstopRefuellingRequired, &event.IsMandatoryPitstopTyreChangeRequired, &event.IsMandatoryPitstopSwapDriverRequired, &event.TyreSetCount)
+    if err != nil {
+      returnInternalServerError(w, err)
+    }
+    jst := time.FixedZone("JST", 9*60*60)
+    event.Startdate = event.Startdate.In(jst)
+    events = append(events, event)
+  }
+
   var writeBuf bytes.Buffer
-  data := map[string]string{}
   t := template.Must(template.ParseFiles("./template/admin.html"))
-  err := t.Execute(&writeBuf, data)
+  data := struct {
+    EventTableRows []models.Event
+  }{events}
+  err = t.Execute(&writeBuf, data)
   if err != nil {
     returnInternalServerError(w, err)
     return
@@ -228,27 +256,4 @@ func checkUserPw(userid []byte, pw []byte) (models.User, error) {
 		return models.User{}, &models.NoMatchingPasswordError{}
 	}
 	return user, nil
-}
-
-func EventsHandler(w http.ResponseWriter, r *http.Request){
-  var result string
-	rows, err := db.Db.Query(fmt.Sprintf("SELECT %s FROM events ORDER BY startdate DESC;", allColumnsOfEvent))
-  if err != nil {
-    returnInternalServerError(w, err)
-  }
-
-  for rows.Next() {
-    var event models.Event
-    err := rows.Scan(&event.Id, &event.Startdate, &event.Track, &event.WeatherRandomness, &event.P_hourOfDay, &event.P_timeMultiplier, &event.P_sessionDurationMinute, &event.Q_hourOfDay, &event.Q_timeMultiplier, &event.Q_sessionDurationMinute, &event.R_hourOfDay, &event.R_timeMultiplier, &event.R_sessionDurationMinute, &event.PitWindowLengthSec, &event.IsRefuellingAllowedInRace, &event.MandatoryPitstopCount, &event.IsMandatoryPitstopRefuellingRequired, &event.IsMandatoryPitstopTyreChangeRequired, &event.IsMandatoryPitstopSwapDriverRequired, &event.TyreSetCount)
-    if err != nil {
-      returnInternalServerError(w, err)
-    }
-    toAdd, err := json.Marshal(event)
-    if err != nil {
-      returnInternalServerError(w, err)
-    }
-    result = string(toAdd)
-  }
-  w.WriteHeader(http.StatusOK)
-  w.Write([]byte(result))
 }
