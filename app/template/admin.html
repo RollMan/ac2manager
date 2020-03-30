@@ -87,13 +87,16 @@
 							</div>
 							<div class="col-8 col-12-medium imp-medium">
 
+                {{ define "editButton" }}
+                <a href="/edit?id={{ .Id }}">edit</a>
+                {{ end }}
 								<section>
 									<h2>Events</h2>
                   <div id="events-table">
                     <table>
                       <tr><td>Date</td><td>Track</td><td>Race Duration</td><td></td></tr>
                       {{ range .EventTableRows }}
-                      <tr><td>{{ .Startdate }}</td><td>{{ .Track }}</td><td>{{ .R_sessionDurationMinute }} min.</td></tr>
+                      <tr><td>{{ .Startdate }}</td><td>{{ .Track }}</td><td>{{ .R_sessionDurationMinute }} min.</td><td>{{ template "editButton" . }}</td></tr>
                       {{ end }}
                     </table>
                   </div>
