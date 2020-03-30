@@ -21,12 +21,18 @@ func main() {
 	}
 
 	r := mux.NewRouter()
+
+  // Public
 	r.HandleFunc("/", handlers.RootHandler)
   r.HandleFunc("/about", handlers.AboutHandler)
 	r.HandleFunc("/login", handlers.LoginGetHandler).Methods("GET")
 	r.HandleFunc("/login", handlers.LoginPostHandler).Methods("POST")
-	r.HandleFunc("/admin", handlers.AuthMiddleware(handlers.AdminHandler))
 	r.NotFoundHandler = http.StripPrefix("/", http.FileServer(http.Dir("static/")))
+  r.HandleFunc("/get_events", handlers.EventsHandler)
+
+  // Need authentication
+	r.HandleFunc("/admin", handlers.AuthMiddleware(handlers.AdminHandler))
+
 
 	log.Fatal(http.ListenAndServe(":8000", r))
 }

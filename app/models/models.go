@@ -10,26 +10,26 @@ type Login struct {
 }
 
 type Event struct {
-  Id                                    uint
-  Startdate                             time.Time
-  Track                                 string
-  WeatherRandomness                     int
-  P_hourOfDay                           int
-  P_timeMultiplier                      int
-  P_sessionDurationMinute               int
-  Q_hourOfDay                           int
-  Q_timeMultiplier                      int
-  Q_sessionDurationMinute               int
-  R_hourOfDay                           int
-  R_timeMultiplier                      int
-  R_sessionDurationMinute               int
-  PitWindowLengthSec                    int
-  IsRefuellingAllowedInRace             bool
-  MandatoryPitstopCount                 int
-  IsMandatoryPitstopRefuellingRequired  bool
-  IsMandatoryPitstopTyreChangeRequired  bool
-  IsMandatoryPitstopSwapDriverRequired  bool
-  TyreSetCount                          int
+ Id uint `json:"id"`
+ Startdate time.Time `json:"startdate"`
+ Track string `json:"track"`
+ WeatherRandomness int `json:"weatherrandomness"`
+ P_hourOfDay int `json:"P_hourOfDay"`
+ P_timeMultiplier int `json:"P_timeMultiplier"`
+ P_sessionDurationMinute int `json:"P_sessionDurationMinute"`
+ Q_hourOfDay int `json:"Q_hourOfDay"`
+ Q_timeMultiplier int `json:"Q_timeMultiplier"`
+ Q_sessionDurationMinute int `json:"Q_sessionDurationMinute"`
+ R_hourOfDay int `json:"R_hourOfDay"`
+ R_timeMultiplier int `json:"R_timeMultiplier"`
+ R_sessionDurationMinute int `json:"R_sessionDurationMinute"`
+ PitWindowLengthSec int `json:"pitWindowLengthSec"`
+ IsRefuellingAllowedInRace bool `json:"isRefuellingAllowedInRace"`
+ MandatoryPitstopCount int `json:"mandatoryPitstopCount"`
+ IsMandatoryPitstopRefuellingRequired bool `json:"isMandatoryPitstopRefuellingRequired"`
+ IsMandatoryPitstopTyreChangeRequired bool `json:"isMandatoryPitstopTyreChangeRequired"`
+ IsMandatoryPitstopSwapDriverRequired bool `json:"isMandatoryPitstopSwapDriverRequired"`
+ TyreSetCount int `json:"tyreSetCount"`
 }
 
 type NextRaceData struct {

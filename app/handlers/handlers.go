@@ -3,6 +3,7 @@ package handlers
 import (
   "bytes"
 	"database/sql"
+  "encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -18,6 +19,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var allColumnsOfEvent = "id, startdate, track, weatherRandomness, P_hourOfDay, P_timeMultiplier, P_sessionDurationMinute, Q_hourOfDay, Q_timeMultiplier, Q_sessionDurationMinute, R_hourOfDay, R_timeMultiplier, R_sessionDurationMinute, pitWindowLengthSec, isRefuellingAllowedInRace, mandatoryPitstopCount, isMandatoryPitstopRefuellingRequired, isMandatoryPitstopTyreChangeRequired, isMandatoryPitstopSwapDriverRequired, tyreSetCount"
 
 type HttpHandler func(http.ResponseWriter, *http.Request, *TokenClaims)
 type TokenClaims struct {
@@ -55,8 +58,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
   // SELECT * FROM events WHERE events.startdate >= CONVERT('1999-01-00', DATETIME) ORDER BY startdate DESC;
   var event models.Event
   now := time.Now()
-  columns := "id, startdate, track, weatherRandomness, P_hourOfDay, P_timeMultiplier, P_sessionDurationMinute, Q_hourOfDay, Q_timeMultiplier, Q_sessionDurationMinute, R_hourOfDay, R_timeMultiplier, R_sessionDurationMinute, pitWindowLengthSec, isRefuellingAllowedInRace, mandatoryPitstopCount, isMandatoryPitstopRefuellingRequired, isMandatoryPitstopTyreChangeRequired, isMandatoryPitstopSwapDriverRequired, tyreSetCount"
-	row := db.Db.QueryRow(fmt.Sprintf("SELECT %s FROM events WHERE events.startdate >= CONVERT(?, DATETIME) ORDER BY startdate ASC;", columns), now)
+	row := db.Db.QueryRow(fmt.Sprintf("SELECT %s FROM events WHERE events.startdate >= CONVERT(?, DATETIME) ORDER BY startdate ASC;", allColumnsOfEvent), now)
   err := row.Scan(&event.Id, &event.Startdate, &event.Track, &event.WeatherRandomness, &event.P_hourOfDay, &event.P_timeMultiplier, &event.P_sessionDurationMinute, &event.Q_hourOfDay, &event.Q_timeMultiplier, &event.Q_sessionDurationMinute, &event.R_hourOfDay, &event.R_timeMultiplier, &event.R_sessionDurationMinute, &event.PitWindowLengthSec, &event.IsRefuellingAllowedInRace, &event.MandatoryPitstopCount, &event.IsMandatoryPitstopRefuellingRequired, &event.IsMandatoryPitstopTyreChangeRequired, &event.IsMandatoryPitstopSwapDriverRequired, &event.TyreSetCount)
 
 
@@ -160,9 +162,17 @@ func LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Success!"))
 }
 
-func AdminHandler(w http.ResponseWriter, r *http.Request, t *TokenClaims) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Secret admin page"))
+func AdminHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
+  var writeBuf bytes.Buffer
+  data := map[string]string{}
+  t := template.Must(template.ParseFiles("./template/admin.html"))
+  err := t.Execute(&writeBuf, data)
+  if err != nil {
+    returnInternalServerError(w, err)
+    return
+  }
+  w.WriteHeader(http.StatusOK)
+  w.Write(writeBuf.Bytes())
 }
 
 func AuthMiddleware(next HttpHandler) http.HandlerFunc {
@@ -218,4 +228,27 @@ func checkUserPw(userid []byte, pw []byte) (models.User, error) {
 		return models.User{}, &models.NoMatchingPasswordError{}
 	}
 	return user, nil
+}
+
+func EventsHandler(w http.ResponseWriter, r *http.Request){
+  var result string
+	rows, err := db.Db.Query(fmt.Sprintf("SELECT %s FROM events ORDER BY startdate DESC;", allColumnsOfEvent))
+  if err != nil {
+    returnInternalServerError(w, err)
+  }
+
+  for rows.Next() {
+    var event models.Event
+    err := rows.Scan(&event.Id, &event.Startdate, &event.Track, &event.WeatherRandomness, &event.P_hourOfDay, &event.P_timeMultiplier, &event.P_sessionDurationMinute, &event.Q_hourOfDay, &event.Q_timeMultiplier, &event.Q_sessionDurationMinute, &event.R_hourOfDay, &event.R_timeMultiplier, &event.R_sessionDurationMinute, &event.PitWindowLengthSec, &event.IsRefuellingAllowedInRace, &event.MandatoryPitstopCount, &event.IsMandatoryPitstopRefuellingRequired, &event.IsMandatoryPitstopTyreChangeRequired, &event.IsMandatoryPitstopSwapDriverRequired, &event.TyreSetCount)
+    if err != nil {
+      returnInternalServerError(w, err)
+    }
+    toAdd, err := json.Marshal(event)
+    if err != nil {
+      returnInternalServerError(w, err)
+    }
+    result = string(toAdd)
+  }
+  w.WriteHeader(http.StatusOK)
+  w.Write([]byte(result))
 }
