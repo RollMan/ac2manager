@@ -3,7 +3,6 @@ package handlers
 import (
   "bytes"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -106,16 +105,9 @@ func LoginGetHandler(w http.ResponseWriter, r *http.Request) {
 
 func LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
-	var req_json models.Login
-	if err := json.NewDecoder(r.Body).Decode(&req_json); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Sprintf("Unknown error. Couldn't decode JSON.\n%s\n", err)))
-    log.Printf("ERROR: Couldn't parse JSON in LoginPostHandler. %v", err.Error())
-		return
-	}
 
-	userid := req_json.UserID
-	pw := req_json.Password
+	userid := r.Header.Get("userid")
+	pw := r.Header.Get("pw")
 
 	var user models.User
 	user, err = checkUserPw([]byte(userid), []byte(pw))
@@ -124,7 +116,7 @@ func LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 		case *models.NoSuchUserError:
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("Such user does not exist."))
-      log.Printf("ERROR: Login request submitted non-existing user %s. %v", userid, err.Error())
+      log.Printf("ERROR: Login request submitted of non-existing user %s. %v", userid, err.Error())
 		case *models.NoMatchingPasswordError:
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("Wrong password."))
