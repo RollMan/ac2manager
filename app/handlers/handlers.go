@@ -3,6 +3,7 @@ package handlers
 import (
   "bytes"
 	"database/sql"
+  "encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -256,4 +257,34 @@ func checkUserPw(userid []byte, pw []byte) (models.User, error) {
 		return models.User{}, &models.NoMatchingPasswordError{}
 	}
 	return user, nil
+}
+
+func AddHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
+  var event models.Event
+  if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
+    returnInternalServerError(w, err)
+  }
+
+  rows, err := db.Db.Query("SELECT * FROM events")
+  if err != nil {
+    returnInternalServerError(err)
+  }
+
+  for rows.Next() {
+    var target models.Event
+    err := rows.Scan(&target.Id, &target.Startdate, &target.Track, &target.WeatherRandomness, &target.P_hourOfDay, &target.P_timeMultiplier, &target.P_sessionDurationMinute, &target.Q_hourOfDay, &target.Q_timeMultiplier, &target.Q_sessionDurationMinute, &target.R_hourOfDay, &target.R_timeMultiplier, &target.R_sessionDurationMinute, &target.PitWindowLengthSec, &target.IsRefuellingAllowedInRace, &target.MandatoryPitstopCount, &target.IsMandatoryPitstopRefuellingRequired, &target.IsMandatoryPitstopTyreChangeRequired, &target.IsMandatoryPitstopSwapDriverRequired, &target.TyreSetCount)
+    adding_start := event.Startdate
+    adding_end := adding_start.Add(time.Minute * (event.P_sessionDurationMinute + event.Q_sessionDurationMinute + event.R_sessionDurationMinute + 5))
+    target_start := target.Startdate
+    target_end := target_start.Add(time.Minute * (target.P_sessionDurationMinute + target.Q_sessionDurationMinute + target.R_sessionDurationMinute + 5))
+    // TODO
+  }
+
+  w.WriteHeader(http.StatusOK)
+  w.Write([]byte(fmt.Sprintf("OK %v"))
+  log.Print(event)
+}
+
+func isNoDuplicate(a_start, a_end, b_start, b_end time.Time) bool {
+  return a_end < b_start || b_end < a_start
 }

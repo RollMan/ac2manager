@@ -31,6 +31,7 @@ func main() {
 
   // Need authentication
 	r.HandleFunc("/admin", handlers.AuthMiddleware(handlers.AdminHandler))
+  r.HandleFunc("/add", handlers.AuthMiddleware(handlers.AddHandler))
 
 
 	log.Fatal(http.ListenAndServe(":8000", r))
