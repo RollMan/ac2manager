@@ -30,7 +30,7 @@ func main() {
 	r.NotFoundHandler = http.StripPrefix("/", http.FileServer(http.Dir("static/")))
 
   // Need authentication
-	r.HandleFunc("/admin", handlers.AuthMiddleware(handlers.AdminHandler))
+	r.HandleFunc("/admin", handlers.AuthMiddleware(handlers.AdminHandler)).Methods("GET")
   r.HandleFunc("/add", handlers.AuthMiddleware(handlers.AddHandler))
   r.HandleFunc("/add_event", handlers.AuthMiddleware(handlers.AddEventHandler))
 

@@ -3,7 +3,6 @@ package handlers
 import (
   "bytes"
 	"database/sql"
-  "encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -210,6 +209,7 @@ func AdminHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
 
 func AuthMiddleware(next HttpHandler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    log.Printf("In authmiddle handlerfunc")
 		tokenCookie, err := r.Cookie("jwt")
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -264,12 +264,15 @@ func checkUserPw(userid []byte, pw []byte) (models.User, error) {
 }
 
 func AddHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
-  var event models.Event
-  r.ParseForm()
-  if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
+  log.Printf("In addhandler")
+  // var event models.Event
+  event := new(models.Event)
+  if err := binding.Bind(r, event); err != nil {
     returnInternalServerError(w, err)
     return
   }
+
+  log.Printf("%v", event)
 
   rows, err := db.Db.Query("SELECT * FROM events")
   if err != nil {
@@ -301,7 +304,6 @@ func AddHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
     return
   }
 
-  // TODO: May require a tool to deal with struct itself.
   ins, err := db.Db.Prepare(fmt.Sprintf("INSERT INTO events (startdate, track, weatherRandomness, P_hourOfDay, P_timeMultiplier, P_sessionDurationMinute, Q_hourOfDay, Q_timeMultiplier, Q_sessionDurationMinute, R_hourOfDay, R_timeMultiplier, R_sessionDurationMinute, pitWindowLengthSec, isRefuellingAllowedInRace, mandatoryPitstopCount, isMandatoryPitstopRefuellingRequired, isMandatoryPitstopTyreChangeRequired, isMandatoryPitstopSwapDriverRequired, tyreSetCount) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"))
   if err != nil {
     returnInternalServerError(w, err)
