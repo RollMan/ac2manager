@@ -18,6 +18,7 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	_ "github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
+  "github.com/mholt/binding"
 )
 
 var allColumnsOfEvent = "id, startdate, track, weatherRandomness, P_hourOfDay, P_timeMultiplier, P_sessionDurationMinute, Q_hourOfDay, Q_timeMultiplier, Q_sessionDurationMinute, R_hourOfDay, R_timeMultiplier, R_sessionDurationMinute, pitWindowLengthSec, isRefuellingAllowedInRace, mandatoryPitstopCount, isMandatoryPitstopRefuellingRequired, isMandatoryPitstopTyreChangeRequired, isMandatoryPitstopSwapDriverRequired, tyreSetCount"
@@ -71,6 +72,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
       isNextRace = false
     }else{
       returnInternalServerError(w, err)
+      return
     }
   }
 
@@ -176,6 +178,7 @@ func AdminHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
 	rows, err := db.Db.Query(fmt.Sprintf("SELECT %s FROM events ORDER BY startdate DESC;", allColumnsOfEvent))
   if err != nil {
     returnInternalServerError(w, err)
+    return
   }
 
 
@@ -184,6 +187,7 @@ func AdminHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
     err := rows.Scan(&event.Id, &event.Startdate, &event.Track, &event.WeatherRandomness, &event.P_hourOfDay, &event.P_timeMultiplier, &event.P_sessionDurationMinute, &event.Q_hourOfDay, &event.Q_timeMultiplier, &event.Q_sessionDurationMinute, &event.R_hourOfDay, &event.R_timeMultiplier, &event.R_sessionDurationMinute, &event.PitWindowLengthSec, &event.IsRefuellingAllowedInRace, &event.MandatoryPitstopCount, &event.IsMandatoryPitstopRefuellingRequired, &event.IsMandatoryPitstopTyreChangeRequired, &event.IsMandatoryPitstopSwapDriverRequired, &event.TyreSetCount)
     if err != nil {
       returnInternalServerError(w, err)
+      return
     }
     jst := time.FixedZone("JST", 9*60*60)
     event.Startdate = event.Startdate.In(jst)
@@ -261,13 +265,16 @@ func checkUserPw(userid []byte, pw []byte) (models.User, error) {
 
 func AddHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
   var event models.Event
+  r.ParseForm()
   if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
     returnInternalServerError(w, err)
+    return
   }
 
   rows, err := db.Db.Query("SELECT * FROM events")
   if err != nil {
     returnInternalServerError(w, err)
+    return
   }
 
   var isDupicate = false
@@ -277,6 +284,7 @@ func AddHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
     err := rows.Scan(&target.Id, &target.Startdate, &target.Track, &target.WeatherRandomness, &target.P_hourOfDay, &target.P_timeMultiplier, &target.P_sessionDurationMinute, &target.Q_hourOfDay, &target.Q_timeMultiplier, &target.Q_sessionDurationMinute, &target.R_hourOfDay, &target.R_timeMultiplier, &target.R_sessionDurationMinute, &target.PitWindowLengthSec, &target.IsRefuellingAllowedInRace, &target.MandatoryPitstopCount, &target.IsMandatoryPitstopRefuellingRequired, &target.IsMandatoryPitstopTyreChangeRequired, &target.IsMandatoryPitstopSwapDriverRequired, &target.TyreSetCount)
     if err != nil {
       returnInternalServerError(w, err)
+      return
     }
     adding_start := event.Startdate
     adding_end := adding_start.Add(time.Minute * time.Duration(event.P_sessionDurationMinute + event.Q_sessionDurationMinute + event.R_sessionDurationMinute + 5))
@@ -297,6 +305,7 @@ func AddHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
   ins, err := db.Db.Prepare(fmt.Sprintf("INSERT INTO events (startdate, track, weatherRandomness, P_hourOfDay, P_timeMultiplier, P_sessionDurationMinute, Q_hourOfDay, Q_timeMultiplier, Q_sessionDurationMinute, R_hourOfDay, R_timeMultiplier, R_sessionDurationMinute, pitWindowLengthSec, isRefuellingAllowedInRace, mandatoryPitstopCount, isMandatoryPitstopRefuellingRequired, isMandatoryPitstopTyreChangeRequired, isMandatoryPitstopSwapDriverRequired, tyreSetCount) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"))
   if err != nil {
     returnInternalServerError(w, err)
+    return
   }
   ins.Exec(event.Startdate, event.Track, event.WeatherRandomness, event.P_hourOfDay, event.P_timeMultiplier, event.P_sessionDurationMinute, event.Q_hourOfDay, event.Q_timeMultiplier, event.Q_sessionDurationMinute, event.R_hourOfDay, event.R_timeMultiplier, event.R_sessionDurationMinute, event.PitWindowLengthSec, event.IsRefuellingAllowedInRace, event.MandatoryPitstopCount, event.IsMandatoryPitstopRefuellingRequired, event.IsMandatoryPitstopTyreChangeRequired, event.IsMandatoryPitstopSwapDriverRequired, event.TyreSetCount)
 
@@ -307,4 +316,17 @@ func AddHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
 
 func isNoDuplicate(a_start, a_end, b_start, b_end time.Time) bool {
   return a_end.Before(b_start) || b_end.Before(a_start)
+}
+
+func AddEventHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims){
+  var writeBuf bytes.Buffer
+  t := template.Must(template.ParseFiles("./template/add.html"))
+  data := map[string]string{}
+  err := t.Execute(&writeBuf, data)
+  if err != nil {
+    returnInternalServerError(w, err)
+    return
+  }
+  w.WriteHeader(http.StatusOK)
+  w.Write(writeBuf.Bytes())
 }

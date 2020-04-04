@@ -1,0 +1,246 @@
+<!DOCTYPE HTML>
+<!--
+	Minimaxing by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>One Column - Minimaxing by HTML5 UP</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+	</head>
+	<body>
+		<div id="page-wrapper">
+
+			<!-- Header -->
+				<div id="header-wrapper">
+					<div class="container">
+						<div class="row">
+							<div class="col-12">
+
+								<header id="header">
+									<h1><a href="index.html" id="logo">Minimaxing</a></h1>
+									<nav id="nav">
+										<a href="index.html">Homepage</a>
+										<a href="twocolumn1.html">Two Column #1</a>
+										<a href="twocolumn2.html">Two Column #2</a>
+										<a href="onecolumn.html" class="current-page-item">One Column</a>
+										<a href="threecolumn.html">Three Column</a>
+									</nav>
+								</header>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+			<!-- Main -->
+				<div id="main">
+					<div class="container">
+						<div class="row main-row">
+							<div class="col-12">
+
+								<section>
+                  <form>
+                    <p>
+                    <label>Date<input type="date" name="startdate_day" required></label>
+                    </p>
+
+                    <p>
+                    <label>Time<input type="time" name="startdate_time" required></label>
+                    </p>
+
+                    <p>
+                    <label>Weather Randomness (0 -- 7)<input type="number" name="weatherRandomness" min="0" max="7" required></label>
+                    </p>
+
+                    <p>
+                    <label>Practice Hour of Day<input type="number" name="P_hourOfDay" min="0" max="24"></label>
+                    </p>
+
+                    <p>
+                    <label>Practice Time Multiplier<select name="P_timeMultiplier">
+                        <option value="0">x0</option>
+                        <option value="1">x1</option>
+                        <option value="2">x2</option>
+                        <option value="3">x3</option>
+                        <option value="6">x6</option>
+                        <option value="12">x12</option>
+                        <option value="24">x24</option>
+                      </select></label>
+                    </p>
+
+                    <p>
+                      <label>Practice Session Duration in Minute<input type="number" name="P_sessionDurationMinute" min="5" max="3600"></label>
+                    </p>
+
+                    <p>
+                    <label>Qialify Hour of Day<input type="number" name="Q_hourOfDay" min="0" max="24"></label>
+                    </p>
+
+                    <p>
+                    <label>Qialify Time Multiplier<select name="Q_timeMultiplier">
+                        <option value="0">x0</option>
+                        <option value="1">x1</option>
+                        <option value="2">x2</option>
+                        <option value="3">x3</option>
+                        <option value="6">x6</option>
+                        <option value="12">x12</option>
+                        <option value="24">x24</option>
+                      </select></label>
+                    </p>
+
+                    <p>
+                      <label>Qialify Session Duration in Minute<input type="number" name="Q_sessionDurationMinute" min="5" max="3600"></label>
+                    </p>
+
+                    <p>
+                    <label>Race Hour of Day<input type="number" name="R_hourOfDay" min="0" max="24"></label>
+                    </p>
+
+                    <p>
+                    <label>Race Time Multiplier<select name="R_timeMultiplier">
+                        <option value="0">x0</option>
+                        <option value="1">x1</option>
+                        <option value="2">x2</option>
+                        <option value="3">x3</option>
+                        <option value="6">x6</option>
+                        <option value="12">x12</option>
+                        <option value="24">x24</option>
+                      </select></label>
+                    </p>
+
+                    <p>
+                      <label>Race Session Duration in Minute<input type="number" name="R_sessionDurationMinute" min="5" max="3600"></label>
+                    </p>
+
+                    <p>
+                      <label>Pit Window Length in Sec<input type="number" name="pitWindowLengthSec", min="-1"></label>
+                    </p>
+
+                    <p>
+                    <label>Mandatory Pitstop Count<input type="number" name="MandatoryPitstopCount", min="0"></label>
+                    </p>
+
+                    <p>
+                    <input type="checkbox" name="isRefuellingAllowedInRace"><label>Refuel Allowed</label>
+                    </p>
+
+                    <p>
+                    <input type="checkbox" name="isMandatoryPitstopRefuellingRequired"><label>Refuel Required</label>
+                    </p>
+
+                    <p>
+                    <input type="checkbox" name="isMandatoryPitstopTyreChangeRequired"><label>Tyre Change Required</label>
+                    </p>
+
+                    <p>
+                    <input type="checkbox" name="isMandatoryPitstopSwapDriverRequired"><label>Swap Driver Required</label>
+                    </p>
+
+                    <p>
+                    <label>Tyre Set Count<input type="number" name="tyreSetCount" min="1"></label>
+                    </p>
+                    
+                    <p>
+                    <input type="submit" value="OK">
+                    </p>
+                  </form>
+								</section>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+			<!-- Footer -->
+				<div id="footer-wrapper">
+					<div class="container">
+						<div class="row">
+							<div class="col-8 col-12-medium">
+
+								<section>
+									<h2>How about a truckload of links?</h2>
+									<div>
+										<div class="row">
+											<div class="col-3 col-6-medium col-12-small">
+												<ul class="link-list">
+													<li><a href="#">Sed neque nisi consequat</a></li>
+													<li><a href="#">Dapibus sed mattis blandit</a></li>
+													<li><a href="#">Quis accumsan lorem</a></li>
+													<li><a href="#">Suspendisse varius ipsum</a></li>
+													<li><a href="#">Eget et amet consequat</a></li>
+												</ul>
+											</div>
+											<div class="col-3 col-6-medium col-12-small">
+												<ul class="link-list">
+													<li><a href="#">Quis accumsan lorem</a></li>
+													<li><a href="#">Sed neque nisi consequat</a></li>
+													<li><a href="#">Eget et amet consequat</a></li>
+													<li><a href="#">Dapibus sed mattis blandit</a></li>
+													<li><a href="#">Vitae magna sed dolore</a></li>
+												</ul>
+											</div>
+											<div class="col-3 col-6-medium col-12-small">
+												<ul class="link-list">
+													<li><a href="#">Sed neque nisi consequat</a></li>
+													<li><a href="#">Dapibus sed mattis blandit</a></li>
+													<li><a href="#">Quis accumsan lorem</a></li>
+													<li><a href="#">Suspendisse varius ipsum</a></li>
+													<li><a href="#">Eget et amet consequat</a></li>
+												</ul>
+											</div>
+											<div class="col-3 col-6-medium col-12-small">
+												<ul class="link-list">
+													<li><a href="#">Quis accumsan lorem</a></li>
+													<li><a href="#">Sed neque nisi consequat</a></li>
+													<li><a href="#">Eget et amet consequat</a></li>
+													<li><a href="#">Dapibus sed mattis blandit</a></li>
+													<li><a href="#">Vitae magna sed dolore</a></li>
+												</ul>
+											</div>
+										</div>
+									</div>
+								</section>
+
+							</div>
+							<div class="col-4 col-12-medium">
+
+								<section>
+									<h2>Something of interest</h2>
+									<p>Duis neque nisi, dapibus sed mattis quis, rutrum accumsan sed.
+									Suspendisse eu varius nibh. Suspendisse vitae magna eget odio amet
+									mollis justo facilisis quis. Sed sagittis mauris amet tellus gravida
+									lorem ipsum dolor sit blandit.</p>
+									<footer class="controls">
+										<a href="#" class="button">Oh, please continue ....</a>
+									</footer>
+								</section>
+
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-12">
+
+								<div id="copyright">
+									&copy; Untitled. All rights reserved. | Design: <a href="http://html5up.net">HTML5 UP</a>
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+		</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
