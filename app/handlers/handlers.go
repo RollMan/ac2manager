@@ -12,8 +12,8 @@ import (
 	"time"
   "log"
 
-	"github.com/RollMan554/ac2manager/app/db"
-	"github.com/RollMan554/ac2manager/app/models"
+	"github.com/RollMan/ac2manager/app/db"
+	"github.com/RollMan/ac2manager/app/models"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	_ "github.com/go-sql-driver/mysql"
@@ -267,24 +267,44 @@ func AddHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
 
   rows, err := db.Db.Query("SELECT * FROM events")
   if err != nil {
-    returnInternalServerError(err)
+    returnInternalServerError(w, err)
   }
 
+  var isDupicate = false
+  var duplicating models.Event
   for rows.Next() {
     var target models.Event
     err := rows.Scan(&target.Id, &target.Startdate, &target.Track, &target.WeatherRandomness, &target.P_hourOfDay, &target.P_timeMultiplier, &target.P_sessionDurationMinute, &target.Q_hourOfDay, &target.Q_timeMultiplier, &target.Q_sessionDurationMinute, &target.R_hourOfDay, &target.R_timeMultiplier, &target.R_sessionDurationMinute, &target.PitWindowLengthSec, &target.IsRefuellingAllowedInRace, &target.MandatoryPitstopCount, &target.IsMandatoryPitstopRefuellingRequired, &target.IsMandatoryPitstopTyreChangeRequired, &target.IsMandatoryPitstopSwapDriverRequired, &target.TyreSetCount)
+    if err != nil {
+      returnInternalServerError(w, err)
+    }
     adding_start := event.Startdate
-    adding_end := adding_start.Add(time.Minute * (event.P_sessionDurationMinute + event.Q_sessionDurationMinute + event.R_sessionDurationMinute + 5))
+    adding_end := adding_start.Add(time.Minute * time.Duration(event.P_sessionDurationMinute + event.Q_sessionDurationMinute + event.R_sessionDurationMinute + 5))
     target_start := target.Startdate
-    target_end := target_start.Add(time.Minute * (target.P_sessionDurationMinute + target.Q_sessionDurationMinute + target.R_sessionDurationMinute + 5))
-    // TODO
+    target_end := target_start.Add(time.Minute * time.Duration(target.P_sessionDurationMinute + target.Q_sessionDurationMinute + target.R_sessionDurationMinute + 5))
+    if isNoDuplicate(adding_start, adding_end, target_start, target_end) == false {
+      isDupicate = true
+      break
+    }
+  }
+  if isDupicate {
+    w.WriteHeader(http.StatusBadRequest)
+    w.Write([]byte(fmt.Sprintf("The adding event duration duplicates with the other event.\nadding: %v\ntarget: %v", event, duplicating)))
+    return
   }
 
+  // TODO: May require a tool to deal with struct itself.
+  ins, err := db.Db.Prepare(fmt.Sprintf("INSERT INTO events (startdate, track, weatherRandomness, P_hourOfDay, P_timeMultiplier, P_sessionDurationMinute, Q_hourOfDay, Q_timeMultiplier, Q_sessionDurationMinute, R_hourOfDay, R_timeMultiplier, R_sessionDurationMinute, pitWindowLengthSec, isRefuellingAllowedInRace, mandatoryPitstopCount, isMandatoryPitstopRefuellingRequired, isMandatoryPitstopTyreChangeRequired, isMandatoryPitstopSwapDriverRequired, tyreSetCount) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"))
+  if err != nil {
+    returnInternalServerError(w, err)
+  }
+  ins.Exec(event.Startdate, event.Track, event.WeatherRandomness, event.P_hourOfDay, event.P_timeMultiplier, event.P_sessionDurationMinute, event.Q_hourOfDay, event.Q_timeMultiplier, event.Q_sessionDurationMinute, event.R_hourOfDay, event.R_timeMultiplier, event.R_sessionDurationMinute, event.PitWindowLengthSec, event.IsRefuellingAllowedInRace, event.MandatoryPitstopCount, event.IsMandatoryPitstopRefuellingRequired, event.IsMandatoryPitstopTyreChangeRequired, event.IsMandatoryPitstopSwapDriverRequired, event.TyreSetCount)
+
   w.WriteHeader(http.StatusOK)
-  w.Write([]byte(fmt.Sprintf("OK %v"))
+  w.Write([]byte(fmt.Sprintf("OK %v", event)))
   log.Print(event)
 }
 
 func isNoDuplicate(a_start, a_end, b_start, b_end time.Time) bool {
-  return a_end < b_start || b_end < a_start
+  return a_end.Before(b_start) || b_end.Before(a_start)
 }

@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/RollMan554/ac2manager/app/db"
-	"github.com/RollMan554/ac2manager/app/handlers"
+	"github.com/RollMan/ac2manager/app/db"
+	"github.com/RollMan/ac2manager/app/handlers"
 
 	"github.com/gorilla/mux"
 )
