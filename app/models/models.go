@@ -2,8 +2,6 @@ package models
 
 import (
   "time"
-  "net/http"
-  "github.com/mholt/binding"
 )
 
 type Login struct {
@@ -32,31 +30,6 @@ type Event struct {
  IsMandatoryPitstopTyreChangeRequired bool `json:"isMandatoryPitstopTyreChangeRequired"`
  IsMandatoryPitstopSwapDriverRequired bool `json:"isMandatoryPitstopSwapDriverRequired"`
  TyreSetCount int `json:"tyreSetCount"`
-}
-
-func (e *Event) FieldMap(r *http.Request) binding.FieldMap {
-  return binding.FieldMap{
-    &e.Id                                     :"id",
-    &e.Startdate                              :"startdate",
-    &e.Track                                  :"track",
-    &e.WeatherRandomness                      :"weatherrandomness",
-    &e.P_hourOfDay                            :"P_hourOfDay",
-    &e.P_timeMultiplier                       :"P_timeMultiplier",
-    &e.P_sessionDurationMinute                :"P_sessionDurationMinute",
-    &e.Q_hourOfDay                            :"Q_hourOfDay",
-    &e.Q_timeMultiplier                       :"Q_timeMultiplier",
-    &e.Q_sessionDurationMinute                :"Q_sessionDurationMinute",
-    &e.R_hourOfDay                            :"R_hourOfDay",
-    &e.R_timeMultiplier                       :"R_timeMultiplier",
-    &e.R_sessionDurationMinute                :"R_sessionDurationMinute",
-    &e.PitWindowLengthSec                     :"pitWindowLengthSec",
-    &e.IsRefuellingAllowedInRace              :"isRefuellingAllowedInRace",
-    &e.MandatoryPitstopCount                  :"mandatoryPitstopCount",
-    &e.IsMandatoryPitstopRefuellingRequired   :"isMandatoryPitstopRefuellingRequired",
-    &e.IsMandatoryPitstopTyreChangeRequired   :"isMandatoryPitstopTyreChangeRequired",
-    &e.IsMandatoryPitstopSwapDriverRequired   :"isMandatoryPitstopSwapDriverRequired",
-    &e.TyreSetCount                           :"tyreSetCount",
-  }
 }
 
 type NextRaceData struct {

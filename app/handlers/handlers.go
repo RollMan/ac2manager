@@ -2,10 +2,12 @@ package handlers
 
 import (
   "bytes"
+  "strconv"
 	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
+  "net/url"
   "html/template"
 	"os"
 	"time"
@@ -17,7 +19,6 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	_ "github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
-  "github.com/mholt/binding"
 )
 
 var allColumnsOfEvent = "id, startdate, track, weatherRandomness, P_hourOfDay, P_timeMultiplier, P_sessionDurationMinute, Q_hourOfDay, Q_timeMultiplier, Q_sessionDurationMinute, R_hourOfDay, R_timeMultiplier, R_sessionDurationMinute, pitWindowLengthSec, isRefuellingAllowedInRace, mandatoryPitstopCount, isMandatoryPitstopRefuellingRequired, isMandatoryPitstopTyreChangeRequired, isMandatoryPitstopSwapDriverRequired, tyreSetCount"
@@ -263,11 +264,60 @@ func checkUserPw(userid []byte, pw []byte) (models.User, error) {
 	return user, nil
 }
 
+func decodeAddForm(form url.Values) (models.Event, error) {
+  for k, v := range form{
+    if len(v) == 0 || v[0] == ""{
+      return models.Event{}, fmt.Errorf("No field for key %v.", k)
+    }
+  }
+  startdate_day := form.Get("startdate_day")
+  startdate_time := form.Get("startdate_time")
+  startdate, err := time.Parse("2006-01-02 15:04", startdate_day + " " + startdate_time)
+  if err != nil {
+    return models.Event{}, err
+  }
+
+  atoi := func (s string) int {
+    r, err := strconv.Atoi(s)
+    if err != nil {
+      log.Panic(fmt.Sprintf("PANIC: Failed to parse form of %s into integer: %v", s, err.Error()))
+    }
+    return r
+  }
+  parseBool := func (s string) bool {
+    r, err := strconv.ParseBool(s)
+    if err != nil {
+      log.Panic(fmt.Sprintf("PANIC: Failed to parse form of %s into bool: %v", s, err.Error()))
+    }
+    return r
+  }
+  return models.Event {
+    Startdate: startdate,
+    Track: form.Get("track"),
+    WeatherRandomness: atoi(form.Get("weatherRandomness")),
+                P_hourOfDay:                            atoi(form.Get("P_hourOfDay")),
+                P_timeMultiplier:                       atoi(form.Get("P_timeMultiplier")),
+                P_sessionDurationMinute:                atoi(form.Get("P_sessionDurationMinute")),
+                Q_hourOfDay:                            atoi(form.Get("Q_hourOfDay")),
+                Q_timeMultiplier:                       atoi(form.Get("Q_timeMultiplier")),
+                Q_sessionDurationMinute:                atoi(form.Get("Q_sessionDurationMinute")),
+                R_hourOfDay:                            atoi(form.Get("R_hourOfDay")),
+                R_timeMultiplier:                       atoi(form.Get("R_timeMultiplier")),
+                R_sessionDurationMinute:                atoi(form.Get("R_sessionDurationMinute")),
+                PitWindowLengthSec:                     atoi(form.Get("pitWindowLengthSec")),
+                IsRefuellingAllowedInRace:              parseBool(form.Get("isRefuellingAllowedInRace")),
+                MandatoryPitstopCount:                  atoi(form.Get("mandatoryPitstopCount")),
+                IsMandatoryPitstopRefuellingRequired:   parseBool(form.Get("isMandatoryPitstopRefuellingRequired")),
+                IsMandatoryPitstopTyreChangeRequired:   parseBool(form.Get("isMandatoryPitstopTyreChangeRequired")),
+                IsMandatoryPitstopSwapDriverRequired:   parseBool(form.Get("isMandatoryPitstopSwapDriverRequired")),
+                TyreSetCount:                           atoi(form.Get("tyreSetCount")),
+  }, nil
+}
+
 func AddHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
-  log.Printf("In addhandler")
-  // var event models.Event
-  event := new(models.Event)
-  if err := binding.Bind(r, event); err != nil {
+  r.ParseForm()
+  event, err := decodeAddForm(r.Form)
+  if err != nil {
     returnInternalServerError(w, err)
     return
   }
