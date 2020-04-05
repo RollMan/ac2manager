@@ -33,6 +33,7 @@ func main() {
 	r.HandleFunc("/admin", handlers.AuthMiddleware(handlers.AdminHandler)).Methods("GET")
   r.HandleFunc("/add", handlers.AuthMiddleware(handlers.AddHandler))
   r.HandleFunc("/add_event", handlers.AuthMiddleware(handlers.AddEventHandler))
+  r.HandleFunc("/edit_event", handlers.AuthMiddleware(handlers.EditEventHandler)).Methods("GET")
 
 
 	log.Fatal(http.ListenAndServe(":8000", r))

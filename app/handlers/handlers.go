@@ -382,3 +382,16 @@ func AddEventHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims)
   w.WriteHeader(http.StatusOK)
   w.Write(writeBuf.Bytes())
 }
+
+func EditEventHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims){
+  var writeBuf bytes.Buffer
+  t := template.Must(template.ParseFiles("./template/edit.html"))
+  data := map[string]string{}
+  err := t.Execute(&writeBuf, data)
+  if err != nil {
+    returnInternalServerError(w, err)
+    return
+  }
+  w.WriteHeader(http.StatusOK)
+  w.Write(writeBuf.Bytes())
+}
