@@ -213,6 +213,7 @@ func AuthMiddleware(next HttpHandler) http.HandlerFunc {
     log.Printf("In authmiddle handlerfunc")
 		tokenCookie, err := r.Cookie("jwt")
 		if err != nil {
+      log.Printf("Redirecting due to no token cookie\n")
       http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
@@ -234,6 +235,7 @@ func AuthMiddleware(next HttpHandler) http.HandlerFunc {
     }
 
 		if claims, ok := token.Claims.(*TokenClaims); ok && token.Valid {
+      log.Print("next")
 			next(w, r, claims)
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -314,6 +316,7 @@ func decodeAddForm(form url.Values) (models.Event, error) {
 }
 
 func AddHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
+  log.Printf("A\n")
   r.ParseForm()
   event, err := decodeAddForm(r.Form)
   if err != nil {
@@ -371,7 +374,7 @@ func isNoDuplicate(a_start, a_end, b_start, b_end time.Time) bool {
 
 func AddEventHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims){
   var writeBuf bytes.Buffer
-  t := template.Must(template.ParseFiles("./template/add.html", "./template/editbutton.html", "./template/raceeventevent_edit.html"))
+  t := template.Must(template.ParseFiles("./template/add.html", "./template/headerfooter.html", "./template/raceevent_edit.html"))
   data := map[string]string{}
   err := t.Execute(&writeBuf, data)
   if err != nil {
@@ -384,7 +387,7 @@ func AddEventHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims)
 
 func EditEventHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims){
   var writeBuf bytes.Buffer
-  t := template.Must(template.ParseFiles("./template/edit.html", "./template/editbutton.html", "./template/raceeventevent_edit.html"))
+  t := template.Must(template.ParseFiles("./template/edit.html", "./template/raceevent_edit.html"))
   data := map[string]string{}
   err := t.Execute(&writeBuf, data)
   if err != nil {

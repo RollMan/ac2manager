@@ -83,21 +83,21 @@
 
   <p>
   <input type="hidden" id="isMandatoryPitstopRefuellingRequired" name="isMandatoryPitstopRefuellingRequired" value="0">
-  <input type="checkbox" id="isMandatoryPitstopRefuellingRequired" name="isMandatoryPitstopRefuellingRequired" value="1" {{IsMandatoryPitstopRefuellingRequiredDefaultValue}}><label>Refuel Required</label>
+  <input type="checkbox" id="isMandatoryPitstopRefuellingRequired" name="isMandatoryPitstopRefuellingRequired" value="1" {{.IsMandatoryPitstopRefuellingRequiredDefaultValue}}><label>Refuel Required</label>
   </p>
 
   <p>
   <input type="hidden" id="isMandatoryPitstopTyreChangeRequired" name="isMandatoryPitstopTyreChangeRequired" value="0">
-  <input type="checkbox" id="isMandatoryPitstopTyreChangeRequired" name="isMandatoryPitstopTyreChangeRequired" value="1" {{IsMandatoryPitstopTyreChangeRequiredDefaultValue}}><label>Tyre Change Required</label>
+  <input type="checkbox" id="isMandatoryPitstopTyreChangeRequired" name="isMandatoryPitstopTyreChangeRequired" value="1" {{.IsMandatoryPitstopTyreChangeRequiredDefaultValue}}><label>Tyre Change Required</label>
   </p>
 
   <p>
   <input type="hidden" id="isMandatoryPitstopSwapDriverRequired" name="isMandatoryPitstopSwapDriverRequired" value="0">
-  <input type="checkbox" id="isMandatoryPitstopSwapDriverRequired" name="isMandatoryPitstopSwapDriverRequired" value="1" {{IsMandatoryPitstopSwapDriverRequiredDefaultValue}}><label>Swap Driver Required</label>
+  <input type="checkbox" id="isMandatoryPitstopSwapDriverRequired" name="isMandatoryPitstopSwapDriverRequired" value="1" {{.IsMandatoryPitstopSwapDriverRequiredDefaultValue}}><label>Swap Driver Required</label>
   </p>
 
   <p>
-  <label>Tyre Set Count<input type="number" id="tyreSetCount" name="tyreSetCount" min="1" {{TyreSetCountDefaultValue}}></label>
+  <label>Tyre Set Count<input type="number" id="tyreSetCount" name="tyreSetCount" min="1" {{.TyreSetCountDefaultValue}}></label>
   </p>
 
   <p>
