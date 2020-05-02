@@ -70,10 +70,15 @@ func TestAddForm(t *testing.T){
     TyreSetCount                         : 3,
   }
 
+  startdate_day := event.Startdate.Format("2006-01-02")
+  startdate_time := event.Startdate.Format("15:04")
+
   forms_add := make([]InputValuePair, 0)
   forms_add = append(forms_add,
-  InputValuePair{`//input[@name="Track"]`, event.Track},
-  InputValuePair{`//input[@name="WeatherRandomness"]`, event.WeatherRandomness},
+  InputValuePair{`//input[@name="startdate_day"`, startdate_day},
+  InputValuePair{`//input[@name="startdate_time"`, startdate_time},
+  InputValuePair{`//input[@name="track"]`, event.Track},
+  InputValuePair{`//input[@name="weatherRandomness"]`, event.WeatherRandomness},
   InputValuePair{`//input[@name="P_hourOfDay"]`, event.P_hourOfDay},
   InputValuePair{`//input[@name="P_timeMultiplier"]`, event.P_timeMultiplier},
   InputValuePair{`//input[@name="P_sessionDurationMinute"]`, event.P_sessionDurationMinute},
@@ -83,15 +88,16 @@ func TestAddForm(t *testing.T){
   InputValuePair{`//input[@name="R_hourOfDay"]`, event.R_hourOfDay},
   InputValuePair{`//input[@name="R_timeMultiplier"]`, event.R_timeMultiplier},
   InputValuePair{`//input[@name="R_sessionDurationMinute"]`, event.R_sessionDurationMinute},
-  InputValuePair{`//input[@name="PitWindowLengthSec"]`, event.PitWindowLengthSec},
-  InputValuePair{`//input[@name="IsRefuellingAllowedInRace"]`, event.IsRefuellingAllowedInRace},
-  InputValuePair{`//input[@name="MandatoryPitstopCount"]`, event.MandatoryPitstopCount},
-  InputValuePair{`//input[@name="IsMandatoryPitstopRefuellingRequired"]`, event.IsMandatoryPitstopRefuellingRequired},
-  InputValuePair{`//input[@name="IsMandatoryPitstopTyreChangeRequired"]`, event.IsMandatoryPitstopTyreChangeRequired},
-  InputValuePair{`//input[@name="IsMandatoryPitstopSwapDriverRequired"]`, event.IsMandatoryPitstopSwapDriverRequired},
-  InputValuePair{`//input[@name="TyreSetCount"]`, event.TyreSetCount},
+  InputValuePair{`//input[@name="pitWindowLengthSec"]`, event.PitWindowLengthSec},
+  InputValuePair{`//input[@name="isRefuellingAllowedInRace"]`, event.IsRefuellingAllowedInRace},
+  InputValuePair{`//input[@name="mandatoryPitstopCount"]`, event.MandatoryPitstopCount},
+  InputValuePair{`//input[@name="isMandatoryPitstopRefuellingRequired"]`, event.IsMandatoryPitstopRefuellingRequired},
+  InputValuePair{`//input[@name="isMandatoryPitstopTyreChangeRequired"]`, event.IsMandatoryPitstopTyreChangeRequired},
+  InputValuePair{`//input[@name="isMandatoryPitstopSwapDriverRequired"]`, event.IsMandatoryPitstopSwapDriverRequired},
+  InputValuePair{`//input[@name="tyreSetCount"]`, event.TyreSetCount},
 )
 
+  // Have to parse startdate and time.
   err = chromedp.Run(ctx, send(`http://localhost:8000/add_event`, forms_add, &res))
 
   log.Printf(res)
