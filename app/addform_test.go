@@ -1,19 +1,21 @@
 package main
 
 import (
+  "time"
   "testing"
   "context"
   "os"
   "log"
   "strings"
+  "strconv"
   "github.com/chromedp/chromedp"
+  "github.com/RollMan/ac2manager/app/models"
   // "github.com/chromedp/chromedp/kb"
-  // "github.com/RollMan/ac2manager/app/models"
 )
 
 type InputValuePair struct {
   Input string
-  Value string
+  Value interface{}
 }
 
 func TestAddForm(t *testing.T){
@@ -31,16 +33,67 @@ func TestAddForm(t *testing.T){
 
   log.Printf("/login response: `%s`", strings.TrimSpace(res))
 
-  // err := chromedp.Run(ctx, 
+  event := models.Event{
+    Startdate: time.Now(),
+    Track: `monza`,
+    WeatherRandomness                    : 2,
+    P_hourOfDay                          : 14,
+    P_timeMultiplier                     : 1,
+    P_sessionDurationMinute              : 30,
+    Q_hourOfDay                          : 14,
+    Q_timeMultiplier                     : 1,
+    Q_sessionDurationMinute              : 30,
+    R_hourOfDay                          : 14,
+    R_timeMultiplier                     : 1,
+    R_sessionDurationMinute              : 30,
+    PitWindowLengthSec                   : 600,
+    IsRefuellingAllowedInRace            : true,
+    MandatoryPitstopCount                : 1,
+    IsMandatoryPitstopRefuellingRequired : false,
+    IsMandatoryPitstopTyreChangeRequired : true,
+    IsMandatoryPitstopSwapDriverRequired : true,
+    TyreSetCount                         : 3,
+  }
 
+  forms_add := make([]InputValuePair, 0)
+  forms_add = append(forms_add,
+  InputValuePair{`//input[@name="Track"]`, event.Track},
+  InputValuePair{`//input[@name="WeatherRandomness"]`, event.WeatherRandomness},
+  InputValuePair{`//input[@name="P_hourOfDay"]`, event.P_hourOfDay},
+  InputValuePair{`//input[@name="P_timeMultiplier"]`, event.P_timeMultiplier},
+  InputValuePair{`//input[@name="P_sessionDurationMinute"]`, event.P_sessionDurationMinute},
+  InputValuePair{`//input[@name="Q_hourOfDay"]`, event.Q_hourOfDay},
+  InputValuePair{`//input[@name="Q_timeMultiplier"]`, event.Q_timeMultiplier},
+  InputValuePair{`//input[@name="Q_sessionDurationMinute"]`, event.Q_sessionDurationMinute},
+  InputValuePair{`//input[@name="R_hourOfDay"]`, event.R_hourOfDay},
+  InputValuePair{`//input[@name="R_timeMultiplier"]`, event.R_timeMultiplier},
+  InputValuePair{`//input[@name="R_sessionDurationMinute"]`, event.R_sessionDurationMinute},
+  InputValuePair{`//input[@name="PitWindowLengthSec"]`, event.PitWindowLengthSec},
+  InputValuePair{`//input[@name="IsRefuellingAllowedInRace"]`, event.IsRefuellingAllowedInRace},
+  InputValuePair{`//input[@name="MandatoryPitstopCount"]`, event.MandatoryPitstopCount},
+  InputValuePair{`//input[@name="IsMandatoryPitstopRefuellingRequired"]`, event.IsMandatoryPitstopRefuellingRequired},
+  InputValuePair{`//input[@name="IsMandatoryPitstopTyreChangeRequired"]`, event.IsMandatoryPitstopTyreChangeRequired},
+  InputValuePair{`//input[@name="IsMandatoryPitstopSwapDriverRequired"]`, event.IsMandatoryPitstopSwapDriverRequired},
+  InputValuePair{`//input[@name="TyreSetCount"]`, event.TyreSetCount},
+)
 }
+
 
 func send(urlstr string, forms []InputValuePair, res *string) chromedp.Tasks{
   tasks := make(chromedp.Tasks, 0)
   tasks = append(tasks, chromedp.Navigate(urlstr))
   for _, f := range(forms) {
     tasks = append(tasks, chromedp.WaitVisible(f.Input))
-    tasks = append(tasks, chromedp.SendKeys(f.Input, f.Value))
+    var value string
+    switch t := f.Value.(type) {
+    case int:
+      value = strconv.Itoa(t)
+    case bool:
+      value = strconv.FormatBool(t)
+    case string:
+      value = t
+    }
+    tasks = append(tasks, chromedp.SendKeys(f.Input, value))
   }
   tasks = append(tasks, chromedp.Submit(forms[0].Input))
   tasks = append(tasks, chromedp.WaitReady(`/html/body`))
