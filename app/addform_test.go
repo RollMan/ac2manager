@@ -6,10 +6,10 @@ import (
   "context"
   "os"
   "log"
-  "strings"
   "strconv"
   "github.com/chromedp/chromedp"
   "github.com/RollMan/ac2manager/app/models"
+  "github.com/chromedp/cdproto/network"
   // "github.com/chromedp/chromedp/kb"
 )
 
@@ -22,17 +22,32 @@ func TestAddForm(t *testing.T){
   ctx, cancel := chromedp.NewContext(context.Background())
   defer cancel()
 
-  forms := make([]InputValuePair, 0)
-  forms = append(forms, InputValuePair{`//input[@name="userid"]`, os.Getenv("AC2_APP_ADMINUSERNAME")}, InputValuePair{`//input[@name="pw"]`, os.Getenv("AC2_APP_ADMINPASSWORD")})
+  // prepare for http response retrieve
+  var statuscode *int64 = new(int64)
+  err := chromedp.Run(ctx, network.Enable())
+  chromedp.ListenTarget(ctx, func(event interface{}) {
+    switch responseReceivedEvent := event.(type) {
+    case *network.EventResponseReceived:
+      response := responseReceivedEvent.Response
+      *statuscode = response.Status
+    }
+  })
+
+
+  // login
+  forms_login := make([]InputValuePair, 0)
+  forms_login = append(forms_login, InputValuePair{`//input[@name="userid"]`, os.Getenv("AC2_APP_ADMINUSERNAME")}, InputValuePair{`//input[@name="pw"]`, os.Getenv("AC2_APP_ADMINPASSWORD")})
 
   var res string
-  err := chromedp.Run(ctx, send(`http://localhost:8000/login`, forms, &res))
+  err = chromedp.Run(ctx, send(`http://localhost:8000/login`, forms_login, &res))
   if err != nil {
     log.Fatal(err)
   }
+  if *statuscode != 200 {
+    log.Fatalf("Bad status code when login: %d", *statuscode)
+  }
 
-  log.Printf("/login response: `%s`", strings.TrimSpace(res))
-
+  // add
   event := models.Event{
     Startdate: time.Now(),
     Track: `monza`,
@@ -76,6 +91,18 @@ func TestAddForm(t *testing.T){
   InputValuePair{`//input[@name="IsMandatoryPitstopSwapDriverRequired"]`, event.IsMandatoryPitstopSwapDriverRequired},
   InputValuePair{`//input[@name="TyreSetCount"]`, event.TyreSetCount},
 )
+
+  err = chromedp.Run(ctx, send(`http://localhost:8000/add_event`, forms_add, &res))
+
+  log.Printf(res)
+
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  if *statuscode != 200 {
+    log.Fatalf("Bad status code when login: %d", *statuscode)
+  }
 }
 
 
