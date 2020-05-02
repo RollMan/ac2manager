@@ -213,8 +213,7 @@ func AuthMiddleware(next HttpHandler) http.HandlerFunc {
     log.Printf("In authmiddle handlerfunc")
 		tokenCookie, err := r.Cookie("jwt")
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("no token"))
+      http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
 
