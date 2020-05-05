@@ -19,7 +19,38 @@ type InputValuePair struct {
 }
 
 func TestAddForm(t *testing.T){
-  ctx, cancel := chromedp.NewContext(context.Background())
+  var optsA = [...]chromedp.ExecAllocatorOption{
+    chromedp.NoFirstRun,
+    chromedp.NoDefaultBrowserCheck,
+    chromedp.DisableGPU,
+
+    chromedp.Flag("disable-background-networking", true),
+    chromedp.Flag("enable-features", "NetworkService,NetworkServiceInProcess"),
+    chromedp.Flag("disable-background-timer-throttling", true),
+    chromedp.Flag("disable-backgrounding-occluded-windows", true),
+    chromedp.Flag("disable-breakpad", true),
+    chromedp.Flag("disable-client-side-phishing-detection", true),
+    chromedp.Flag("disable-default-apps", true),
+    chromedp.Flag("disable-dev-shm-usage", true),
+    chromedp.Flag("disable-extensions", true),
+    chromedp.Flag("disable-features", "site-per-process,TranslateUI,BlinkGenPropertyTrees"),
+    chromedp.Flag("disable-hang-monitor", true),
+    chromedp.Flag("disable-ipc-flooding-protection", true),
+    chromedp.Flag("disable-popup-blocking", true),
+    chromedp.Flag("disable-prompt-on-repost", true),
+    chromedp.Flag("disable-renderer-backgrounding", true),
+    chromedp.Flag("disable-sync", true),
+    chromedp.Flag("force-color-profile", "srgb"),
+    chromedp.Flag("metrics-recording-only", true),
+    chromedp.Flag("safebrowsing-disable-auto-update", true),
+    chromedp.Flag("enable-automation", true),
+    chromedp.Flag("password-store", "basic"),
+    chromedp.Flag("use-mock-keychain", true),
+}
+  opts := optsA[:]
+  allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+  defer cancel()
+  ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
   defer cancel()
 
   // prepare for http response retrieve
@@ -73,8 +104,10 @@ func TestAddForm(t *testing.T){
   startdate_day := event.Startdate.Format("2006-01-02")
   startdate_time := event.Startdate.Format("15:04")
 
+
   forms_add := make([]InputValuePair, 0)
   forms_add = append(forms_add,
+  InputValuePair{`//input[@name="tyreSetCount"]`, event.TyreSetCount},
   InputValuePair{`//input[@name="startdate_day"`, startdate_day},
   InputValuePair{`//input[@name="startdate_time"`, startdate_time},
   InputValuePair{`//input[@name="track"]`, event.Track},
@@ -94,7 +127,6 @@ func TestAddForm(t *testing.T){
   InputValuePair{`//input[@name="isMandatoryPitstopRefuellingRequired"]`, event.IsMandatoryPitstopRefuellingRequired},
   InputValuePair{`//input[@name="isMandatoryPitstopTyreChangeRequired"]`, event.IsMandatoryPitstopTyreChangeRequired},
   InputValuePair{`//input[@name="isMandatoryPitstopSwapDriverRequired"]`, event.IsMandatoryPitstopSwapDriverRequired},
-  InputValuePair{`//input[@name="tyreSetCount"]`, event.TyreSetCount},
 )
 
   // Have to parse startdate and time.
