@@ -41,7 +41,7 @@ func returnInternalServerError(w http.ResponseWriter, err error){
 }
 
 func AboutHandler(w http.ResponseWriter, r *http.Request){
-  t := template.Must(template.ParseFiles("./template/about.html"))
+  t := template.Must(template.ParseFiles("./template/about.html", "./template/headerfooter.html"))
   data := map[string]string{"a":"a"}
   var writeBuf bytes.Buffer
   err := t.Execute(&writeBuf, data)
@@ -83,7 +83,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
       "SERVER STATUS ICON",
       "SERVER STATUS STATEMENT",
     }
-    t := template.Must(template.ParseFiles("./template/index.html", "./template/upcoming_race_configure.html"))
+    t := template.Must(template.ParseFiles("./template/index.html", "./template/upcoming_race_configure.html", "./template/headerfooter.html"))
     err = t.Execute(&writeBuf, data)
     if err != nil {
       returnInternalServerError(w, err)
@@ -91,7 +91,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
     }
   }else{
     data := map[string]string{}
-    t := template.Must(template.ParseFiles("./template/index.html", "./template/no_upcoming_race.html"))
+    t := template.Must(template.ParseFiles("./template/index.html", "./template/no_upcoming_race.html", "./template/headerfooter.html"))
     err = t.Execute(&writeBuf, data)
     if err != nil {
       returnInternalServerError(w, err)
@@ -105,7 +105,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 
 func LoginGetHandler(w http.ResponseWriter, r *http.Request) {
   var writeBuf bytes.Buffer
-  t := template.Must(template.ParseFiles("./template/login.html"))
+  t := template.Must(template.ParseFiles("./template/login.html", "./template/headerfooter.html"))
   err := t.Execute(&writeBuf, nil)
   if err != nil {
     returnInternalServerError(w, err)
@@ -195,7 +195,7 @@ func AdminHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
   }
 
   var writeBuf bytes.Buffer
-  t := template.Must(template.ParseFiles("./template/admin.html"))
+  t := template.Must(template.ParseFiles("./template/admin.html", "./template/headerfooter.html"))
   data := struct {
     EventTableRows []models.Event
   }{events}
@@ -213,8 +213,8 @@ func AuthMiddleware(next HttpHandler) http.HandlerFunc {
     log.Printf("In authmiddle handlerfunc")
 		tokenCookie, err := r.Cookie("jwt")
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("no token"))
+      log.Printf("Redirecting due to no token cookie\n")
+      http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
 
@@ -235,6 +235,7 @@ func AuthMiddleware(next HttpHandler) http.HandlerFunc {
     }
 
 		if claims, ok := token.Claims.(*TokenClaims); ok && token.Valid {
+      log.Print("next")
 			next(w, r, claims)
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -315,6 +316,7 @@ func decodeAddForm(form url.Values) (models.Event, error) {
 }
 
 func AddHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
+  log.Printf("A\n")
   r.ParseForm()
   event, err := decodeAddForm(r.Form)
   if err != nil {
@@ -372,7 +374,7 @@ func isNoDuplicate(a_start, a_end, b_start, b_end time.Time) bool {
 
 func AddEventHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims){
   var writeBuf bytes.Buffer
-  t := template.Must(template.ParseFiles("./template/add.html"))
+  t := template.Must(template.ParseFiles("./template/add.html", "./template/headerfooter.html", "./template/raceevent_edit.html"))
   data := map[string]string{}
   err := t.Execute(&writeBuf, data)
   if err != nil {
@@ -385,7 +387,7 @@ func AddEventHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims)
 
 func EditEventHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims){
   var writeBuf bytes.Buffer
-  t := template.Must(template.ParseFiles("./template/edit.html"))
+  t := template.Must(template.ParseFiles("./template/edit.html", "./template/raceevent_edit.html"))
   data := map[string]string{}
   err := t.Execute(&writeBuf, data)
   if err != nil {

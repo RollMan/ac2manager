@@ -1,0 +1,107 @@
+{{ define "raceevent_edit" }}
+<div>
+  <p>
+  <label>Date<input type="date" id="startdate_day" name="startdate_day" {{.DateDefaultValue}} required></label>
+  </p>
+
+  <p>
+  <label>Time<input type="time" id="startdate_time" name="startdate_time" {{.TimeDefaultValue}} required></label>
+  </p>
+
+  <p>
+  <label>Track</label><select id="track" name="track">
+    {{ range .TrackOptions }}
+      <option value="{{.TrackName}}" {{.IsSelected}}>{{.TrackName}}</option>
+    {{end}}
+  </select>
+  </p>
+
+  <p>
+  <label>Weather Randomness (0 -- 7)<input type="number" id="weatherRandomness" name="weatherRandomness" min="0" max="7" {{.WeatherRandomnessDefaultValue}} required></label>
+  </p>
+
+  <p>
+  <label>Practice Hour of Day<input type="number" id="P_hourOfDay" name="P_hourOfDay" min="0" max="24" {{.P_hourOfDayDefaultValue}} ></label>
+  </p>
+
+  <p>
+  <label>Practice Time Multiplier<select id="P_timeMultiplier" name="P_timeMultiplier">
+      {{ range .P_timeMultiplierOptions}}
+        <option value="{{.Value}}" {{.IsSelected}}>&times;{{.Value}}</option>
+      {{end}}
+    </select></label>
+  </p>
+
+  <p>
+  <label>Practice Session Duration in Minute<input type="number" id="P_sessionDurationMinute" name="P_sessionDurationMinute" min="5" max="3600" {{.P_sessionDurationMinuteDefaultValue}}></label>
+  </p>
+
+  <p>
+  <label>Qialify Hour of Day<input type="number" id="Q_hourOfDay" name="Q_hourOfDay" min="0" max="24" {{.Q_hourOfDayDefaultValue}}></label>
+  </p>
+
+  <p>
+  <label>Qialify Time Multiplier<select id="Q_timeMultiplier" name="Q_timeMultiplier">
+      {{ range .Q_timeMultiplierOptions}}
+        <option value="{{.Value}}" {{.IsSelected}}>&times;{{.Value}}</option>
+      {{end}}
+    </select></label>
+  </p>
+
+  <p>
+  <label>Qialify Session Duration in Minute<input type="number" id="Q_sessionDurationMinute" name="Q_sessionDurationMinute" min="5" max="3600" {{.Q_sessionDurationMinuteDefaultValue}}></label>
+  </p>
+
+  <p>
+  <label>Race Hour of Day<input type="number" id="R_hourOfDay" name="R_hourOfDay" min="0" max="24" {{.R_hourOfDayDefaultValue}}></label>
+  </p>
+
+  <p>
+  <label>Race Time Multiplier<select id="R_timeMultiplier" name="R_timeMultiplier">
+      {{ range .R_timeMultiplierOptions}}
+        <option value="{{.Value}}" {{.IsSelected}}>&times;{{.Value}}</option>
+      {{end}}
+    </select></label>
+  </p>
+
+  <p>
+  <label>Race Session Duration in Minute<input type="number" id="R_sessionDurationMinute" name="R_sessionDurationMinute" min="5" max="3600" {{.R_sessionDurationMinuteDefaultvalue}}></label>
+  </p>
+
+  <p>
+  <label>Pit Window Length in Sec<input type="number" id="pitWindowLengthSec" name="pitWindowLengthSec", min="-1" {{.PitWindowLengthSecDefaultValue}}></label>
+  </p>
+
+  <p>
+  <label>Mandatory Pitstop Count<input type="number" id="mandatoryPitstopCount" name="mandatoryPitstopCount", min="0" {{.MandatoryPitstopCountDefaultValue}}></label>
+  </p>
+
+  <p>
+  <input type="hidden" id="isRefuellingAllowedInRace" name="isRefuellingAllowedInRace" value="0">
+  <input type="checkbox" id="isRefuellingAllowedInRace" name="isRefuellingAllowedInRace" value="1" {{.IsRefuellingAllowedInRaceDefaultvalue}}><label>Refuel Allowed</label>
+  </p>
+
+  <p>
+  <input type="hidden" id="isMandatoryPitstopRefuellingRequired" name="isMandatoryPitstopRefuellingRequired" value="0">
+  <input type="checkbox" id="isMandatoryPitstopRefuellingRequired" name="isMandatoryPitstopRefuellingRequired" value="1" {{.IsMandatoryPitstopRefuellingRequiredDefaultValue}}><label>Refuel Required</label>
+  </p>
+
+  <p>
+  <input type="hidden" id="isMandatoryPitstopTyreChangeRequired" name="isMandatoryPitstopTyreChangeRequired" value="0">
+  <input type="checkbox" id="isMandatoryPitstopTyreChangeRequired" name="isMandatoryPitstopTyreChangeRequired" value="1" {{.IsMandatoryPitstopTyreChangeRequiredDefaultValue}}><label>Tyre Change Required</label>
+  </p>
+
+  <p>
+  <input type="hidden" id="isMandatoryPitstopSwapDriverRequired" name="isMandatoryPitstopSwapDriverRequired" value="0">
+  <input type="checkbox" id="isMandatoryPitstopSwapDriverRequired" name="isMandatoryPitstopSwapDriverRequired" value="1" {{.IsMandatoryPitstopSwapDriverRequiredDefaultValue}}><label>Swap Driver Required</label>
+  </p>
+
+  <p>
+  <label>Tyre Set Count<input type="number" id="tyreSetCount" name="tyreSetCount" min="1" {{.TyreSetCountDefaultValue}}></label>
+  </p>
+
+  <p>
+  <input type="submit" value="OK">
+  </p>
+</div>
+{{end}}
