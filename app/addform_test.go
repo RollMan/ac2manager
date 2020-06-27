@@ -67,7 +67,7 @@ func TestAddForm(t *testing.T){
 
   // login
   forms_login := make([]InputValuePair, 0)
-  forms_login = append(forms_login, InputValuePair{`//input[@name="userid"]`, os.Getenv("AC2_APP_ADMINUSERNAME")}, InputValuePair{`//input[@name="pw"]`, os.Getenv("AC2_APP_ADMINPASSWORD")})
+  forms_login = append(forms_login, InputValuePair{`//input[@name="userid"]`, os.Getenv("AC2_APP_ADMINUSERNAME")}, InputValuePair{`//input[@name="pw"]`, os.Getenv("AC2_APP_ADMINPASSWORD_HASHED")})
 
   var res string
   err = chromedp.Run(ctx, send(`http://localhost:8000/login`, forms_login, &res))

@@ -11,7 +11,7 @@ CREATE TABLE users (
 );
 
 -- Change the initial user name and password into an argument.
-INSERT INTO users (userid, pwhash, attribute) VALUES ('${AC2_APP_ADMINUSERNAME}', '$(htpasswd -bnBC 10 "" ${AC2_APP_ADMINPASSWORD} | tr -d ':\n' | sed 's/$2y/$2a/')', 1);
+INSERT INTO users (userid, pwhash, attribute) VALUES ('${AC2_APP_ADMINUSERNAME}', '${AC2_APP_ADMINPASSWORD_HASHED}', 1);
 
 CREATE TABLE events (
   id INT(10) unsigned not null auto_increment primary key,
