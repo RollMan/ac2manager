@@ -1,9 +1,11 @@
 version: '3.7'
 services:
   app:
+    env_file:
+      ./.env
     build: ./app
-    networks:
-      - udnetwork
+    ports:
+      - "80:80"
 
   db:
     build: ./db
@@ -11,8 +13,6 @@ services:
       ./.env
     volumes:
       - "db-data:/var/lib/mysql"
-    networks:
-      - udnetwork
     environment:
       - MYSQL_USER=ac2manager
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
@@ -21,6 +21,3 @@ services:
 
 volumes:
   db-data:
-
-networks:
-  udnetwork:

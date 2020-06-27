@@ -4,4 +4,5 @@ RUN mkdir /work
 
 WORKDIR /work
 COPY . .
-CMD ["go", "run", "main.go"]
+RUN go build -o app
+CMD ["./app"]
