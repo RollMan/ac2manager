@@ -1,4 +1,5 @@
 #!/bin/bash
+ echo "ABCDEFG====================================="
  echo "CREATE DATABASE ac2;
 use ac2;
 
@@ -35,4 +36,5 @@ CREATE TABLE events (
   tyreSetCount INT
 );
 
-INSERT into events (startdate, track, weatherRandomness, P_hourOfDay, P_timeMultiplier, P_sessionDurationMinute, Q_hourOfDay, Q_timeMultiplier, Q_sessionDurationMinute, R_hourOfDay, R_timeMultiplier, R_sessionDurationMinute, pitWindowLengthSec, isRefuellingAllowedInRace, mandatoryPitstopCount, isMandatoryPitstopRefuellingRequired, isMandatoryPitstopTyreChangeRequired, isMandatoryPitstopSwapDriverRequired, tyreSetCount) VALUES ('2000-01-01 11:30:00', 'zandvoort_2019', 1, 12, 1, 10, 13, 1, 10, 14, 1, 10, 120, true, 1, false, true, true, 3);" | "${mysql[@]}"
+INSERT into events (startdate, track, weatherRandomness, P_hourOfDay, P_timeMultiplier, P_sessionDurationMinute, Q_hourOfDay, Q_timeMultiplier, Q_sessionDurationMinute, R_hourOfDay, R_timeMultiplier, R_sessionDurationMinute, pitWindowLengthSec, isRefuellingAllowedInRace, mandatoryPitstopCount, isMandatoryPitstopRefuellingRequired, isMandatoryPitstopTyreChangeRequired, isMandatoryPitstopSwapDriverRequired, tyreSetCount) VALUES ('2000-01-01 11:30:00', 'zandvoort_2019', 1, 12, 1, 10, 13, 1, 10, 14, 1, 10, 120, true, 1, false, true, true, 3);" | mysql -u root --password=${MYSQL_ROOT_PASSWORD}
+ echo "ABCDEFG====================================="

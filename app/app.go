@@ -15,7 +15,8 @@ import (
 func main() {
   log.Print("Server started.")
 	{
-    dsn := fmt.Sprintf("%s:%s@db:3306/ac2?charset=utf8&parseTime=true", os.Getenv("AC2_DB_USERNAME"), os.Getenv("MYSQL_ROOT_PASSWORD"))
+    dsn := fmt.Sprintf("%s:%s@tcp(db:3306)/ac2?charset=utf8&parseTime=true", os.Getenv("AC2_DB_USERNAME"), os.Getenv("MYSQL_ROOT_PASSWORD"))
+    log.Print(dsn)
 		db.InitDB(dsn)
     log.Print("DB OK.")
 	}
@@ -36,5 +37,5 @@ func main() {
   r.HandleFunc("/edit_event", handlers.AuthMiddleware(handlers.EditEventHandler)).Methods("GET")
 
 
-	log.Fatal(http.ListenAndServe(":8000", r))
+	log.Fatal(http.ListenAndServe(":80", r))
 }

@@ -1,4 +1,4 @@
-module github.com/RollMan/ac2manager
+module github.com/RollMan/ac2manager/app
 
 go 1.14
 
