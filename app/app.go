@@ -16,7 +16,6 @@ func main() {
   log.Print("Server started.")
 	{
     dsn := fmt.Sprintf("%s:%s@tcp(db:3306)/ac2?charset=utf8&parseTime=true", os.Getenv("AC2_DB_USERNAME"), os.Getenv("MYSQL_ROOT_PASSWORD"))
-    log.Print(dsn)
 		db.InitDB(dsn)
     log.Print("DB OK.")
 	}
