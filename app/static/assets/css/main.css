@@ -2018,6 +2018,11 @@ mark {
   margin-right: auto;
 }
 
+.alert > a:link {
+  color: white;
+  text-decoration: underline;
+}
+
 .alert > a:visited {
   color: white;
   text-decoration: underline;
