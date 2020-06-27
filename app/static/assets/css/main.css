@@ -2014,4 +2014,6 @@ mark {
   background-color: #2196F3;
   color: white;
   margin-bottom: 15px;
+  margin-left: auto;
+  margin-right: auto;
 }

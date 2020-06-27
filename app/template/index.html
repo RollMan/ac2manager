@@ -32,10 +32,14 @@
       <div id="main">
         <div class="container">
           <div class="row main-row">
+            <div class="col-12 col-12-large alert">
+              このページは現在開発中です。 server status, upcoming event は現在稼働しておりません。最新情報は <a href="http://mattermost.ac2.coppelab.net">mattermost</a> をご確認ください。
+            </div>
             <div class="col-4 col-12-medium">
 
               <section>
                 <h2>Server Status</h2>
+                WORK IN PROGRESS
                 <p>{{.ServerStatusIcon}} {{.ServerStatusStatement}}</p>
               </section>
 
@@ -44,6 +48,7 @@
 
               <section>
                 <h2>Upcoming Event</h2>
+                WORK IN PROGRESS
                 {{template "upcoming" .}}
               </section>
             </div>
