@@ -14,4 +14,12 @@
 *.out
 
 
+# .env includes critical informations such as a db password and should not be uploaded.
+###### .env template #####
+# AC2_DB_USERNAME=root_string
+# MYSQL_ROOT_PASSWORD=password_string
+# AC2_APP_ADMINUSERNAME=admin_string
+# AC2_APP_ADMINPASSWORD=password_string
+# JWT_SIGNING_KEY=random_string
+##########################
 .env
