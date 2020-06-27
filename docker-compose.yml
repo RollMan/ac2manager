@@ -5,7 +5,7 @@ services:
       ./.env
     build: ./app
     ports:
-      - "80:80"
+      - "8001:80"
 
   db:
     build: ./db
