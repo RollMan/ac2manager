@@ -2017,3 +2017,8 @@ mark {
   margin-left: auto;
   margin-right: auto;
 }
+
+.alert > a:visited {
+  color: white;
+  text-decoration: underline;
+}
