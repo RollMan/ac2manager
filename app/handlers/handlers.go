@@ -237,14 +237,12 @@ func AuthMiddleware(next HttpHandler) http.HandlerFunc {
 func checkUserPw(userid []byte, pw []byte) (models.User, error) {
 	var user models.User
 	var err error
-	row := db.Db.QueryRow("SELECT * FROM users WHERE userid=?;", userid)
-	err = row.Scan(&user.UserID, &user.PWHash, &user.Attribute)
-
+  err = db.DbMap.SelectOne(&user, "SELECT * FROM users WHERE userid=?;", userid)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return models.User{}, &models.NoSuchUserError{}
 		} else {
-			return models.User{}, errors.New("Unknown Error")
+      return models.User{}, errors.New(fmt.Sprintf("Unknown Error: %v", err))
 		}
 	}
 
