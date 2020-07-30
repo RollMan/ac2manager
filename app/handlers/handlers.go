@@ -177,23 +177,10 @@ func LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 
 func AdminHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
   var events []models.Event
-	rows, err := db.Db.Query(fmt.Sprintf("SELECT %s FROM events ORDER BY startdate DESC;", allColumnsOfEvent))
+  _, err := db.DbMap.Select(&events, "SELECT * FROM events ORDER BY startdate DESC;")
   if err != nil {
     returnInternalServerError(w, err)
     return
-  }
-
-
-  for rows.Next() {
-    var event models.Event
-    err := rows.Scan(&event.Id, &event.Startdate, &event.Track, &event.WeatherRandomness, &event.P_hourOfDay, &event.P_timeMultiplier, &event.P_sessionDurationMinute, &event.Q_hourOfDay, &event.Q_timeMultiplier, &event.Q_sessionDurationMinute, &event.R_hourOfDay, &event.R_timeMultiplier, &event.R_sessionDurationMinute, &event.PitWindowLengthSec, &event.IsRefuellingAllowedInRace, &event.MandatoryPitstopCount, &event.IsMandatoryPitstopRefuellingRequired, &event.IsMandatoryPitstopTyreChangeRequired, &event.IsMandatoryPitstopSwapDriverRequired, &event.TyreSetCount)
-    if err != nil {
-      returnInternalServerError(w, err)
-      return
-    }
-    jst := time.FixedZone("JST", 9*60*60)
-    event.Startdate = event.Startdate.In(jst)
-    events = append(events, event)
   }
 
   var writeBuf bytes.Buffer
