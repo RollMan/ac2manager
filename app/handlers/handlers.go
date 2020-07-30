@@ -59,9 +59,11 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
   // SELECT * FROM events WHERE events.startdate >= CONVERT('1999-01-00', DATETIME) ORDER BY startdate DESC;
   var event models.Event
   now := time.Now()
-	row := db.Db.QueryRow(fmt.Sprintf("SELECT %s FROM events WHERE events.startdate >= CONVERT(?, DATETIME) ORDER BY startdate ASC;", allColumnsOfEvent), now)
-  err := row.Scan(&event.Id, &event.Startdate, &event.Track, &event.WeatherRandomness, &event.P_hourOfDay, &event.P_timeMultiplier, &event.P_sessionDurationMinute, &event.Q_hourOfDay, &event.Q_timeMultiplier, &event.Q_sessionDurationMinute, &event.R_hourOfDay, &event.R_timeMultiplier, &event.R_sessionDurationMinute, &event.PitWindowLengthSec, &event.IsRefuellingAllowedInRace, &event.MandatoryPitstopCount, &event.IsMandatoryPitstopRefuellingRequired, &event.IsMandatoryPitstopTyreChangeRequired, &event.IsMandatoryPitstopSwapDriverRequired, &event.TyreSetCount)
-
+  err := db.DbMap.SelectOne(&event, "SELECT * FROM events WHERE events.startdate >= CONVERT(?, DATETIME) ORDER BY startdate ASC;", now)
+  if err != nil {
+    returnInternalServerError(w, err)
+    return
+  }
 
   jst := time.FixedZone("JST", 9*60*60)
   event.Startdate = event.Startdate.In(jst)

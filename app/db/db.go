@@ -4,11 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+  "github.com/go-gorp/gorp"
 	"log"
   "time"
 )
 
 var Db *sql.DB
+var DbMap *gorp.DbMap
 
 func InitDB(dsn string) {
 	var err error
@@ -27,4 +29,5 @@ func InitDB(dsn string) {
     }
     break
   }
+  DbMap = &gorp.DbMap{Db: Db, Dialect: gorp.MySQLDialect{}}
 }
