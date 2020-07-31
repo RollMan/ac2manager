@@ -313,7 +313,8 @@ func AddHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
 
   log.Printf("%v", event)
 
-  rows, err := db.Db.Query("SELECT * FROM events")
+  var events []models.Event
+  _, err = db.DbMap.Select(&events, "SELECT * FROM events")
   if err != nil {
     returnInternalServerError(w, err)
     return
@@ -321,13 +322,7 @@ func AddHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
 
   var isDupicate = false
   var duplicating models.Event
-  for rows.Next() {
-    var target models.Event
-    err := rows.Scan(&target.Id, &target.Startdate, &target.Track, &target.WeatherRandomness, &target.P_hourOfDay, &target.P_timeMultiplier, &target.P_sessionDurationMinute, &target.Q_hourOfDay, &target.Q_timeMultiplier, &target.Q_sessionDurationMinute, &target.R_hourOfDay, &target.R_timeMultiplier, &target.R_sessionDurationMinute, &target.PitWindowLengthSec, &target.IsRefuellingAllowedInRace, &target.MandatoryPitstopCount, &target.IsMandatoryPitstopRefuellingRequired, &target.IsMandatoryPitstopTyreChangeRequired, &target.IsMandatoryPitstopSwapDriverRequired, &target.TyreSetCount)
-    if err != nil {
-      returnInternalServerError(w, err)
-      return
-    }
+  for _, target := range events {
     adding_start := event.Startdate
     adding_end := adding_start.Add(time.Minute * time.Duration(event.P_sessionDurationMinute + event.Q_sessionDurationMinute + event.R_sessionDurationMinute + 5))
     target_start := target.Startdate
@@ -343,12 +338,12 @@ func AddHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
     return
   }
 
-  ins, err := db.Db.Prepare(fmt.Sprintf("INSERT INTO events (startdate, track, weatherRandomness, P_hourOfDay, P_timeMultiplier, P_sessionDurationMinute, Q_hourOfDay, Q_timeMultiplier, Q_sessionDurationMinute, R_hourOfDay, R_timeMultiplier, R_sessionDurationMinute, pitWindowLengthSec, isRefuellingAllowedInRace, mandatoryPitstopCount, isMandatoryPitstopRefuellingRequired, isMandatoryPitstopTyreChangeRequired, isMandatoryPitstopSwapDriverRequired, tyreSetCount) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"))
+  err = db.DbMap.Insert(&event)
+
   if err != nil {
     returnInternalServerError(w, err)
     return
   }
-  ins.Exec(event.Startdate, event.Track, event.WeatherRandomness, event.P_hourOfDay, event.P_timeMultiplier, event.P_sessionDurationMinute, event.Q_hourOfDay, event.Q_timeMultiplier, event.Q_sessionDurationMinute, event.R_hourOfDay, event.R_timeMultiplier, event.R_sessionDurationMinute, event.PitWindowLengthSec, event.IsRefuellingAllowedInRace, event.MandatoryPitstopCount, event.IsMandatoryPitstopRefuellingRequired, event.IsMandatoryPitstopTyreChangeRequired, event.IsMandatoryPitstopSwapDriverRequired, event.TyreSetCount)
 
   w.WriteHeader(http.StatusOK)
   w.Write([]byte(fmt.Sprintf("OK %v", event)))
