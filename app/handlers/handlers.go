@@ -60,26 +60,23 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
   var event models.Event
   now := time.Now()
   err := db.DbMap.SelectOne(&event, "SELECT * FROM events WHERE events.startdate >= CONVERT(?, DATETIME) ORDER BY startdate ASC;", now)
-  if err != nil {
-    returnInternalServerError(w, err)
-    return
-  }
-
-  jst := time.FixedZone("JST", 9*60*60)
-  event.Startdate = event.Startdate.In(jst)
-
   var isNextRace bool = true
   if err != nil {
     if err == sql.ErrNoRows {
       isNextRace = false
     }else{
+      log.Printf("Error at SELECT * FROM events WHERE events.startdate >= CONVERT(?, DATETIME) ORDER BY startdate ASC;\n")
       returnInternalServerError(w, err)
       return
     }
   }
 
+
   var writeBuf bytes.Buffer
   if isNextRace {
+    jst := time.FixedZone("JST", 9*60*60)
+    event.Startdate = event.Startdate.In(jst)
+
     data := models.NextRaceData{
       event,
       "SERVER STATUS ICON",
@@ -179,6 +176,7 @@ func AdminHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
   var events []models.Event
   _, err := db.DbMap.Select(&events, "SELECT * FROM events ORDER BY startdate DESC;")
   if err != nil {
+    log.Printf("Error at SELECT * FROM events ORDER BY startdate DESC;")
     returnInternalServerError(w, err)
     return
   }
