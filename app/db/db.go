@@ -3,10 +3,10 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"github.com/go-gorp/gorp"
 	_ "github.com/go-sql-driver/mysql"
-  "github.com/go-gorp/gorp"
 	"log"
-  "time"
+	"time"
 )
 
 var Db *sql.DB
@@ -19,15 +19,15 @@ func InitDB(dsn string) {
 		fmt.Println("DB Opening Error.")
 		log.Fatal(err)
 	}
-  for {
-    err = Db.Ping()
-    if err != nil {
-      fmt.Println("DB Ping Error. Retrying...")
-      log.Println(err)
-      time.Sleep(3 * time.Second)
-      continue
-    }
-    break
-  }
-  DbMap = &gorp.DbMap{Db: Db, Dialect: gorp.MySQLDialect{}}
+	for {
+		err = Db.Ping()
+		if err != nil {
+			fmt.Println("DB Ping Error. Retrying...")
+			log.Println(err)
+			time.Sleep(3 * time.Second)
+			continue
+		}
+		break
+	}
+	DbMap = &gorp.DbMap{Db: Db, Dialect: gorp.MySQLDialect{}}
 }
