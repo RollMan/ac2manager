@@ -23,11 +23,7 @@ import (
 
 var allColumnsOfEvent = "id, startdate, track, weatherRandomness, P_hourOfDay, P_timeMultiplier, P_sessionDurationMinute, Q_hourOfDay, Q_timeMultiplier, Q_sessionDurationMinute, R_hourOfDay, R_timeMultiplier, R_sessionDurationMinute, pitWindowLengthSec, isRefuellingAllowedInRace, mandatoryPitstopCount, isMandatoryPitstopRefuellingRequired, isMandatoryPitstopTyreChangeRequired, isMandatoryPitstopSwapDriverRequired, tyreSetCount"
 
-type HttpHandler func(http.ResponseWriter, *http.Request, *TokenClaims)
-type TokenClaims struct {
-	Attribute int
-	jwt.StandardClaims
-}
+type HttpHandler func(http.ResponseWriter, *http.Request, *models.TokenClaims)
 
 func returnInternalServerError(w http.ResponseWriter, err error){
     w.WriteHeader(http.StatusInternalServerError)
@@ -142,7 +138,7 @@ func LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now()
-	claims := &TokenClaims{
+	claims := &models.TokenClaims{
 		user.Attribute,
 		jwt.StandardClaims{
 			ExpiresAt: now.Add(time.Hour * 6).Unix(),
@@ -172,7 +168,7 @@ func LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Success!"))
 }
 
-func AdminHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
+func AdminHandler(w http.ResponseWriter, r *http.Request, token *models.TokenClaims) {
   var events []models.Event
   _, err := db.DbMap.Select(&events, "SELECT * FROM events ORDER BY startdate DESC;")
   if err != nil {
@@ -207,7 +203,7 @@ func AuthMiddleware(next HttpHandler) http.HandlerFunc {
 
 		tokenstring := tokenCookie.Value
 
-		token, err := jwt.ParseWithClaims(tokenstring, &TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(tokenstring, &models.TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 			}
@@ -221,7 +217,7 @@ func AuthMiddleware(next HttpHandler) http.HandlerFunc {
       return
     }
 
-		if claims, ok := token.Claims.(*TokenClaims); ok && token.Valid {
+		if claims, ok := token.Claims.(*models.TokenClaims); ok && token.Valid {
       log.Print("next")
 			next(w, r, claims)
 		} else {
@@ -300,7 +296,7 @@ func decodeAddForm(form url.Values) (models.Event, error) {
   }, nil
 }
 
-func AddHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims) {
+func AddHandler(w http.ResponseWriter, r *http.Request, token *models.TokenClaims) {
   log.Printf("A\n")
   r.ParseForm()
   event, err := decodeAddForm(r.Form)
@@ -352,7 +348,7 @@ func isNoDuplicate(a_start, a_end, b_start, b_end time.Time) bool {
   return a_end.Before(b_start) || b_end.Before(a_start)
 }
 
-func AddEventHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims){
+func AddEventHandler(w http.ResponseWriter, r *http.Request, token *models.TokenClaims){
   var writeBuf bytes.Buffer
   t := template.Must(template.ParseFiles("./template/add.html", "./template/headerfooter.html", "./template/raceevent_edit.html"))
   data := map[string]string{}
@@ -365,7 +361,7 @@ func AddEventHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims)
   w.Write(writeBuf.Bytes())
 }
 
-func EditEventHandler(w http.ResponseWriter, r *http.Request, token *TokenClaims){
+func EditEventHandler(w http.ResponseWriter, r *http.Request, token *models.TokenClaims){
   var writeBuf bytes.Buffer
   t := template.Must(template.ParseFiles("./template/edit.html", "./template/raceevent_edit.html"))
   data := map[string]string{}

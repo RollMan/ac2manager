@@ -2,6 +2,7 @@ package models
 
 import (
   "time"
+  jwt "github.com/dgrijalva/jwt-go"
 )
 
 type NextRaceData struct {
@@ -16,6 +17,10 @@ type User struct {
   Attribute int    `json:"attribute" db:"attribute"`
 }
 
+type TokenClaims struct {
+	Attribute int
+	jwt.StandardClaims
+}
 type Event struct {
     Id                                     uint        `json:"id" db:"id"`
     Startdate                              time.Time   `json:"startdate" db:"startdate"`

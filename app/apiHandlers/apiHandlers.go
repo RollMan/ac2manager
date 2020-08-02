@@ -154,20 +154,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request){
     return
   }
 
-  buf, err := ioutil.ReadAll(r.Body)
+  var req_user models.User
+  err = ParseJSONBody(r, &req_user)
   if err != nil {
     log.Println(err)
     w.WriteHeader(http.StatusInternalServerError)
     return
   }
 
-  var req_user models.User
-  err = json.Unmarshal(buf, &req_user)
-  if err != nil {
-    log.Println(err)
-    w.WriteHeader(http.StatusInternalServerError)
-    return
-  }
 
   userid := req_user.UserID
   pwhash := req_user.PWHash
@@ -239,4 +233,86 @@ func checkUserPw(userid []byte, pw []byte) error {
 		return &models.NoMatchingPasswordError{}
 	}
 	return nil
+}
+
+func AddRaceHandler(w http.ResponseWriter, r *http.Request, token *models.TokenClaims){
+  var err error
+  var event models.Event
+  if r.Header.Get("Content-Type") != "application/json" {
+  }else{
+    log.Println("Invalid, not application/json request for login received.")
+    w.WriteHeader(http.StatusBadRequest)
+    return
+  }
+  err = ParseJSONBody(r, &event)
+  if err != nil {
+    log.Println(err)
+    w.WriteHeader(http.StatusInternalServerError)
+    return
+  }
+
+  var events []models.Event
+  _, err = db.DbMap.Select(&events, "SELECT * FROM events")
+  if err != nil {
+    log.Println(err)
+    w.WriteHeader(http.StatusInternalServerError)
+    return
+  }
+
+  var isDupicate = false
+  var duplicating models.Event
+  for _, target := range events {
+    adding_start := event.Startdate
+    adding_end := adding_start.Add(time.Minute * time.Duration(event.P_sessionDurationMinute + event.Q_sessionDurationMinute + event.R_sessionDurationMinute + 5))
+    target_start := target.Startdate
+    target_end := target_start.Add(time.Minute * time.Duration(target.P_sessionDurationMinute + target.Q_sessionDurationMinute + target.R_sessionDurationMinute + 5))
+    if isNoDuplicate(adding_start, adding_end, target_start, target_end) == false {
+      isDupicate = true
+      break
+    }
+  }
+  if isDupicate {
+    w.WriteHeader(http.StatusBadRequest)
+    w.Write([]byte(fmt.Sprintf("The adding event duration duplicates with the other event.\nadding: %v\ntarget: %v", event, duplicating)))
+    return
+  }
+  err = db.DbMap.Insert(&event)
+
+  if err != nil {
+    log.Println(err)
+    w.WriteHeader(http.StatusInternalServerError)
+    return
+  }
+
+  var res map[string]interface{}  = map[string]interface{}{"success": true}
+
+  body, err := json.Marshal(res)
+  if err != nil {
+    log.Println(err)
+    w.WriteHeader(http.StatusInternalServerError)
+    return
+  }
+
+  w.WriteHeader(http.StatusOK)
+  w.Write([]byte(body))
+}
+
+func isNoDuplicate(a_start, a_end, b_start, b_end time.Time) bool {
+  return a_end.Before(b_start) || b_end.Before(a_start)
+}
+
+func ParseJSONBody(r *http.Request, res interface{}) error {
+  var err error
+  
+  buf, err := ioutil.ReadAll(r.Body)
+  if err != nil {
+    return err
+  }
+
+  err = json.Unmarshal(buf, res)
+  if err != nil {
+    return err
+  }
+  return nil
+
 }
