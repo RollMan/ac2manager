@@ -47,7 +47,7 @@ func main() {
 
   // API requiring authentication
   r.HandleFunc("/api/add_race", handlers.AuthMiddleware(apiHandlers.AddRaceHandler)).Methods("POST")
-  r.HandleFunc("/api/edit_race", handlers.AuthMiddleware(apiHandlers.EditRaceHandler)).Methods("POST")
+  r.HandleFunc("/api/remove_race", handlers.AuthMiddleware(apiHandlers.RemoveRaceHandler)).Methods("POST")
 
 
 	log.Fatal(http.ListenAndServe(":80", r))

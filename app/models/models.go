@@ -12,7 +12,7 @@ type NextRaceData struct {
 }
 
 type User struct {
-  UserID    []byte `json:"userid" db:"userid"`
+  UserID    []byte `json:"userid" db:"userid, primarykey"`
   PWHash    []byte `json:"pwhash" db:"pwhash"`
   Attribute int    `json:"attribute" db:"attribute"`
 }
@@ -22,7 +22,7 @@ type TokenClaims struct {
 	jwt.StandardClaims
 }
 type Event struct {
-    Id                                     uint        `json:"id" db:"id"`
+    Id                                     uint        `json:"id" db:"id, primarykey"`
     Startdate                              time.Time   `json:"startdate" db:"startdate"`
     Track                                  string      `json:"track" db:"track"`
     WeatherRandomness                      int         `json:"weatherrandomness" db:"weatherRandomness"`

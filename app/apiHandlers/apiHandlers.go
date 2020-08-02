@@ -21,6 +21,23 @@ type TokenClaims struct {
 	jwt.StandardClaims
 }
 
+func ParseJSONBody(r *http.Request, res interface{}) error {
+  var err error
+  
+  buf, err := ioutil.ReadAll(r.Body)
+  if err != nil {
+    return err
+  }
+
+  err = json.Unmarshal(buf, res)
+  if err != nil {
+    return err
+  }
+  return nil
+
+}
+
+
 func ServerStatusHandler(w http.ResponseWriter, r *http.Request){
 }
 
@@ -301,18 +318,31 @@ func isNoDuplicate(a_start, a_end, b_start, b_end time.Time) bool {
   return a_end.Before(b_start) || b_end.Before(a_start)
 }
 
-func ParseJSONBody(r *http.Request, res interface{}) error {
+func RemoveRaceHandler(w http.ResponseWriter, r *http.Request, token *models.TokenClaims){
   var err error
-  
-  buf, err := ioutil.ReadAll(r.Body)
+  var event models.Event
+  err = ParseJSONBody(r, &event)
   if err != nil {
-    return err
+    log.Println(err)
+    w.WriteHeader(http.StatusInternalServerError)
+    return
   }
 
-  err = json.Unmarshal(buf, res)
+  count, err := db.DbMap.Delete(&event)
   if err != nil {
-    return err
+    log.Println(err)
+    w.WriteHeader(http.StatusInternalServerError)
+    return
   }
-  return nil
 
+  res := map[string]interface{}{"count": count}
+  body, err := json.Marshal(res)
+  if err != nil {
+    log.Println(err)
+    w.WriteHeader(http.StatusInternalServerError)
+    return
+  }
+
+  w.WriteHeader(http.StatusOK)
+  w.Write([]byte(body))
 }
