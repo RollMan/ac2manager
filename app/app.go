@@ -35,6 +35,18 @@ func main() {
   r.HandleFunc("/add_event", handlers.AuthMiddleware(handlers.AddEventHandler))
   r.HandleFunc("/edit_event", handlers.AuthMiddleware(handlers.EditEventHandler)).Methods("GET")
 
+  // API for public
+  r.HandleFunc("/api/races", apiHandlers.races).Methods("GET")
+  r.HandleFunc("/api/upcoming_race", apiHandlers.upcoming_race).Methods("GET")
+  r.HandleFunc("/api/past_races", apiHandlers.past_races).Methods("GET")
+  r.HandleFunc("/api/future_races", apiHandlers.future_races).Methods("GET")
+  r.HandleFunc("/api/server_status", apiHandlers.server_status).Methods("GET")
+  r.HandleFunc("/api/login", apiHandlers.login).Methods("POST")
+
+  // API requiring authentication
+  r.HandleFunc("/api/add_race", handlers.AuthMiddleware(apiHandlers.add_race)).Methods("POST")
+  r.HandleFunc("/api/edit_race", handlers.AuthMiddleware(apiHandlers.edit_race)).Methods("POST")
+
 
 	log.Fatal(http.ListenAndServe(":80", r))
 }
