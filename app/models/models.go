@@ -4,9 +4,16 @@ import (
   "time"
 )
 
-type Login struct {
-  UserID   string `json:"userid" db:"userid"`
-  Password string `json:"pw" db:"pwhash"`
+type NextRaceData struct {
+  Event
+  ServerStatusIcon string "WIP(SERVER STATUS ICON)"
+  ServerStatusStatement string "WIP(SERVER STATUS STATEMENT)"
+}
+
+type User struct {
+  UserID    []byte `json:"userid" db:"userid"`
+  PWHash    []byte `json:"pwhash" db:"pwhash"`
+  Attribute int    `json:"attribute" db:"attribute"`
 }
 
 type Event struct {
@@ -30,18 +37,6 @@ type Event struct {
     IsMandatoryPitstopTyreChangeRequired   bool        `json:"isMandatoryPitstopTyreChangeRequired" db:"isMandatoryPitstopTyreChangeRequired"`
     IsMandatoryPitstopSwapDriverRequired   bool        `json:"isMandatoryPitstopSwapDriverRequired" db:"isMandatoryPitstopSwapDriverRequired"`
     TyreSetCount                           int         `json:"tyreSetCount" db:"tyreSetCount"`
-}
-
-type NextRaceData struct {
-  Event
-  ServerStatusIcon string "WIP(SERVER STATUS ICON)"
-  ServerStatusStatement string "WIP(SERVER STATUS STATEMENT)"
-}
-
-type User struct {
-  UserID    []byte `json:"userid"`
-  PWHash    []byte `json:"pwhash"`
-  Attribute int    `json:"attribute"`
 }
 
 type NoSuchUserError struct{}
