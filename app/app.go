@@ -8,11 +8,13 @@ import (
 
 	"github.com/RollMan/ac2manager/app/db"
 	"github.com/RollMan/ac2manager/app/handlers"
+	"github.com/RollMan/ac2manager/app/apiHandlers"
 
 	"github.com/gorilla/mux"
 )
 
 func main() {
+  log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
   log.Print("Server started.")
 	{
     dsn := fmt.Sprintf("%s:%s@tcp(db:3306)/ac2?charset=utf8&parseTime=true", os.Getenv("AC2_DB_USERNAME"), os.Getenv("MYSQL_ROOT_PASSWORD"))
@@ -36,16 +38,16 @@ func main() {
   r.HandleFunc("/edit_event", handlers.AuthMiddleware(handlers.EditEventHandler)).Methods("GET")
 
   // API for public
-  r.HandleFunc("/api/races", apiHandlers.races).Methods("GET")
-  r.HandleFunc("/api/upcoming_race", apiHandlers.upcoming_race).Methods("GET")
-  r.HandleFunc("/api/past_races", apiHandlers.past_races).Methods("GET")
-  r.HandleFunc("/api/future_races", apiHandlers.future_races).Methods("GET")
-  r.HandleFunc("/api/server_status", apiHandlers.server_status).Methods("GET")
-  r.HandleFunc("/api/login", apiHandlers.login).Methods("POST")
+  r.HandleFunc("/api/races", apiHandlers.RacesHandler).Methods("GET")
+  r.HandleFunc("/api/upcoming_race", apiHandlers.UpcomingRaceHandler).Methods("GET")
+  r.HandleFunc("/api/past_races", apiHandlers.PastRacesHandler).Methods("GET")
+  r.HandleFunc("/api/future_races", apiHandlers.FutureRacesHandler).Methods("GET")
+  r.HandleFunc("/api/server_status", apiHandlers.ServerStatusHandler).Methods("GET")
+  r.HandleFunc("/api/login", apiHandlers.LoginHandler).Methods("POST")
 
   // API requiring authentication
-  r.HandleFunc("/api/add_race", handlers.AuthMiddleware(apiHandlers.add_race)).Methods("POST")
-  r.HandleFunc("/api/edit_race", handlers.AuthMiddleware(apiHandlers.edit_race)).Methods("POST")
+  r.HandleFunc("/api/add_race", handlers.AuthMiddleware(apiHandlers.AddRaceHandler)).Methods("POST")
+  r.HandleFunc("/api/edit_race", handlers.AuthMiddleware(apiHandlers.EditRaceHandler)).Methods("POST")
 
 
 	log.Fatal(http.ListenAndServe(":80", r))
