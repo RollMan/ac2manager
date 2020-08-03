@@ -1,58 +1,58 @@
 package models
 
 import (
-  "time"
+	jwt "github.com/dgrijalva/jwt-go"
+	"time"
 )
 
-type Login struct {
-  UserID   string `json:"userid"`
-  Password string `json:"pw"`
-}
-
-type Event struct {
- Id uint `json:"id"`
- Startdate time.Time `json:"startdate"`
- Track string `json:"track"`
- WeatherRandomness int `json:"weatherrandomness"`
- P_hourOfDay int `json:"P_hourOfDay"`
- P_timeMultiplier int `json:"P_timeMultiplier"`
- P_sessionDurationMinute int `json:"P_sessionDurationMinute"`
- Q_hourOfDay int `json:"Q_hourOfDay"`
- Q_timeMultiplier int `json:"Q_timeMultiplier"`
- Q_sessionDurationMinute int `json:"Q_sessionDurationMinute"`
- R_hourOfDay int `json:"R_hourOfDay"`
- R_timeMultiplier int `json:"R_timeMultiplier"`
- R_sessionDurationMinute int `json:"R_sessionDurationMinute"`
- PitWindowLengthSec int `json:"pitWindowLengthSec"`
- IsRefuellingAllowedInRace bool `json:"isRefuellingAllowedInRace"`
- MandatoryPitstopCount int `json:"mandatoryPitstopCount"`
- IsMandatoryPitstopRefuellingRequired bool `json:"isMandatoryPitstopRefuellingRequired"`
- IsMandatoryPitstopTyreChangeRequired bool `json:"isMandatoryPitstopTyreChangeRequired"`
- IsMandatoryPitstopSwapDriverRequired bool `json:"isMandatoryPitstopSwapDriverRequired"`
- TyreSetCount int `json:"tyreSetCount"`
-}
-
 type NextRaceData struct {
-  Event
-  ServerStatusIcon string "WIP(SERVER STATUS ICON)"
-  ServerStatusStatement string "WIP(SERVER STATUS STATEMENT)"
+	Event
+	ServerStatusIcon      string "WIP(SERVER STATUS ICON)"
+	ServerStatusStatement string "WIP(SERVER STATUS STATEMENT)"
 }
 
 type User struct {
-  UserID    []byte `json:"userid"`
-  PWHash    []byte `json:"pwhash"`
-  Attribute int    `json:"attribute"`
+	UserID    string `json:"userid" db:"userid, primarykey"`
+	PWHash    string `json:"pwhash" db:"pwhash"`
+	Attribute int    `json:"attribute" db:"attribute"`
+}
+
+type TokenClaims struct {
+	Attribute int
+	jwt.StandardClaims
+}
+type Event struct {
+	Id                                   uint      `json:"id" db:"id, primarykey"`
+	Startdate                            time.Time `json:"startdate" db:"startdate"`
+	Track                                string    `json:"track" db:"track"`
+	WeatherRandomness                    int       `json:"weatherrandomness" db:"weatherRandomness"`
+	P_hourOfDay                          int       `json:"P_hourOfDay" db:"P_hourOfDay"`
+	P_timeMultiplier                     int       `json:"P_timeMultiplier" db:"P_timeMultiplier"`
+	P_sessionDurationMinute              int       `json:"P_sessionDurationMinute" db:"P_sessionDurationMinute"`
+	Q_hourOfDay                          int       `json:"Q_hourOfDay" db:"Q_hourOfDay"`
+	Q_timeMultiplier                     int       `json:"Q_timeMultiplier" db:"Q_timeMultiplier"`
+	Q_sessionDurationMinute              int       `json:"Q_sessionDurationMinute" db:"Q_sessionDurationMinute"`
+	R_hourOfDay                          int       `json:"R_hourOfDay" db:"R_hourOfDay"`
+	R_timeMultiplier                     int       `json:"R_timeMultiplier" db:"R_timeMultiplier"`
+	R_sessionDurationMinute              int       `json:"R_sessionDurationMinute" db:"R_sessionDurationMinute"`
+	PitWindowLengthSec                   int       `json:"pitWindowLengthSec" db:"pitWindowLengthSec"`
+	IsRefuellingAllowedInRace            bool      `json:"isRefuellingAllowedInRace" db:"isRefuellingAllowedInRace"`
+	MandatoryPitstopCount                int       `json:"mandatoryPitstopCount" db:"mandatoryPitstopCount"`
+	IsMandatoryPitstopRefuellingRequired bool      `json:"isMandatoryPitstopRefuellingRequired" db:"isMandatoryPitstopRefuellingRequired"`
+	IsMandatoryPitstopTyreChangeRequired bool      `json:"isMandatoryPitstopTyreChangeRequired" db:"isMandatoryPitstopTyreChangeRequired"`
+	IsMandatoryPitstopSwapDriverRequired bool      `json:"isMandatoryPitstopSwapDriverRequired" db:"isMandatoryPitstopSwapDriverRequired"`
+	TyreSetCount                         int       `json:"tyreSetCount" db:"tyreSetCount"`
 }
 
 type NoSuchUserError struct{}
 type NoMatchingPasswordError struct{}
 
 func (e *NoSuchUserError) Error() string {
-  return "No such userid in DB."
+	return "No such userid in DB."
 }
 
 func (e *NoMatchingPasswordError) Error() string {
-  return "Password unmatched."
+	return "Password unmatched."
 }
 
 const NoEvent = `<h3>No upcoming events.<h3>
