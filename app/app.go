@@ -25,10 +25,6 @@ func main() {
 	r := mux.NewRouter()
 
 	// Public
-	r.HandleFunc("/", handlers.RootHandler)
-	r.HandleFunc("/about", handlers.AboutHandler)
-	r.HandleFunc("/login", handlers.LoginGetHandler).Methods("GET")
-	r.HandleFunc("/login", handlers.LoginPostHandler).Methods("POST")
 	r.NotFoundHandler = http.StripPrefix("/", http.FileServer(http.Dir("static/")))
 
 	// Need authentication
