@@ -25,13 +25,10 @@ func main() {
 	r := mux.NewRouter()
 
 	// Public
-	r.NotFoundHandler = http.StripPrefix("/", http.FileServer(http.Dir("static/")))
+  r.PathPrefix("/").Handler(http.FileServer(http.Dir("static/")))
 
-	// Need authentication
-	r.HandleFunc("/admin", handlers.AuthMiddleware(handlers.AdminHandler)).Methods("GET")
-	r.HandleFunc("/add", handlers.AuthMiddleware(handlers.AddHandler))
-	r.HandleFunc("/add_event", handlers.AuthMiddleware(handlers.AddEventHandler))
-	r.HandleFunc("/edit_event", handlers.AuthMiddleware(handlers.EditEventHandler)).Methods("GET")
+  // Requiring authentication
+  r.PathPrefix("/admin/").HandlerFunc(handlers.AuthMiddleware(handlers.StaticWithAuth))
 
 	// API for public
 	r.HandleFunc("/api/races", apiHandlers.RacesHandler).Methods("GET")

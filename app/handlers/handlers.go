@@ -195,7 +195,7 @@ func AuthMiddleware(next HttpHandler) http.HandlerFunc {
 		tokenCookie, err := r.Cookie("jwt")
 		if err != nil {
 			log.Printf("Redirecting due to no token cookie\n")
-			http.Redirect(w, r, "/login", http.StatusFound)
+			http.Redirect(w, r, "/login.html", http.StatusFound)
 			return
 		}
 
@@ -370,4 +370,10 @@ func EditEventHandler(w http.ResponseWriter, r *http.Request, token *models.Toke
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(writeBuf.Bytes())
+}
+
+func StaticWithAuth(w http.ResponseWriter, r *http.Request, token *models.TokenClaims){
+  handler := http.StripPrefix("/admin/", http.FileServer(http.Dir("admin/")))
+  log.Println(handler)
+  handler.ServeHTTP(w, r)
 }

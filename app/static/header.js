@@ -10,7 +10,7 @@ const body = `
             <a href="/">Top</a>
             <a href="/about.html">About</a>
             <a href="/pastevents.html">Past Events</a>
-            <a href="/admin.html">Admin Area</a>
+            <a href="admin/admin.html">Admin Area</a>
           </nav>
         </header>
 
