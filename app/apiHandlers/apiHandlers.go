@@ -114,8 +114,8 @@ func UpcomingRaceHandler(w http.ResponseWriter, r *http.Request) {
 func PastRacesHandler(w http.ResponseWriter, r *http.Request) {
 	var events []models.Event
 	now := time.Now()
-	_, err := db.DbMap.Select(&events, "SELECT * FROM events WHERE events.startdate <= CONVERT(?, DATETIME ORDER BY startdate ASC;", now)
-	if err == nil {
+	_, err := db.DbMap.Select(&events, "SELECT * FROM events WHERE events.startdate <= CONVERT(?, DATETIME) ORDER BY startdate ASC;", now)
+	if err != nil {
 		if err == sql.ErrNoRows {
 			events = make([]models.Event, 0)
 		} else {
@@ -139,8 +139,8 @@ func PastRacesHandler(w http.ResponseWriter, r *http.Request) {
 func FutureRacesHandler(w http.ResponseWriter, r *http.Request) {
 	var events []models.Event
 	now := time.Now()
-	_, err := db.DbMap.Select(&events, "SELECT * FROM events WHERE events.startdate > CONVERT(?, DATETIME ORDER BY startdate ASC;", now)
-	if err == nil {
+	_, err := db.DbMap.Select(&events, "SELECT * FROM events WHERE events.startdate > CONVERT(?, DATETIME) ORDER BY startdate ASC;", now)
+	if err != nil {
 		if err == sql.ErrNoRows {
 			events = make([]models.Event, 0)
 		} else {
@@ -164,7 +164,6 @@ func FutureRacesHandler(w http.ResponseWriter, r *http.Request) {
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	if r.Header.Get("Content-Type") != "application/json" {
-	} else {
 		log.Println("Invalid, not application/json request for login received.")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -254,7 +253,6 @@ func AddRaceHandler(w http.ResponseWriter, r *http.Request, token *models.TokenC
 	var err error
 	var event models.Event
 	if r.Header.Get("Content-Type") != "application/json" {
-	} else {
 		log.Println("Invalid, not application/json request for login received.")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -319,6 +317,11 @@ func isNoDuplicate(a_start, a_end, b_start, b_end time.Time) bool {
 func RemoveRaceHandler(w http.ResponseWriter, r *http.Request, token *models.TokenClaims) {
 	var err error
 	var event models.Event
+	if r.Header.Get("Content-Type") != "application/json" {
+		log.Println("Invalid, not application/json request for login received.")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	err = ParseJSONBody(r, &event)
 	if err != nil {
 		log.Println(err)

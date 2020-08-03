@@ -12,8 +12,8 @@ type NextRaceData struct {
 }
 
 type User struct {
-	UserID    []byte `json:"userid" db:"userid, primarykey"`
-	PWHash    []byte `json:"pwhash" db:"pwhash"`
+	UserID    string `json:"userid" db:"userid, primarykey"`
+	PWHash    string `json:"pwhash" db:"pwhash"`
 	Attribute int    `json:"attribute" db:"attribute"`
 }
 

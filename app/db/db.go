@@ -7,6 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"time"
+	"github.com/RollMan/ac2manager/app/models"
 )
 
 var Db *sql.DB
@@ -30,4 +31,5 @@ func InitDB(dsn string) {
 		break
 	}
 	DbMap = &gorp.DbMap{Db: Db, Dialect: gorp.MySQLDialect{}}
+  DbMap.AddTableWithName(models.Event{}, "events").SetKeys(true, "id")
 }
