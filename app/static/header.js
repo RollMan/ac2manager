@@ -1,3 +1,4 @@
+(function(){
 const body = `
 <div id="header-wrapper">
   <div class="container">
@@ -21,3 +22,4 @@ const body = `
 `
 
 document.write(body)
+})();

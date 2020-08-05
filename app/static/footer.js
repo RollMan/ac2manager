@@ -1,4 +1,4 @@
-const body = `
+(function(){const body = `
 <div id="footer-wrapper">
   <div class="container">
     <div class="row">
@@ -45,3 +45,4 @@ const body = `
 `
 
 document.write(body)
+})();
