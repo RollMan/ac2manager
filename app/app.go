@@ -24,11 +24,10 @@ func main() {
 
 	r := mux.NewRouter()
 
-	// Public
-  r.PathPrefix("/").Handler(http.FileServer(http.Dir("static/")))
 
   // Requiring authentication
   r.PathPrefix("/admin/").HandlerFunc(handlers.AuthMiddleware(handlers.StaticWithAuth))
+
 
 	// API for public
 	r.HandleFunc("/api/races", apiHandlers.RacesHandler).Methods("GET")
@@ -38,9 +37,14 @@ func main() {
 	r.HandleFunc("/api/server_status", apiHandlers.ServerStatusHandler).Methods("GET")
 	r.HandleFunc("/api/login", apiHandlers.LoginHandler).Methods("POST")
 
+  r.HandleFunc("/login", handlers.LoginPostHandler)
+
 	// API requiring authentication
 	r.HandleFunc("/api/add_race", handlers.AuthMiddleware(apiHandlers.AddRaceHandler)).Methods("POST")
 	r.HandleFunc("/api/remove_race", handlers.AuthMiddleware(apiHandlers.RemoveRaceHandler)).Methods("POST")
+
+	// Public
+  r.PathPrefix("/").Handler(http.FileServer(http.Dir("static/")))
 
 	log.Fatal(http.ListenAndServe(":80", r))
 }
