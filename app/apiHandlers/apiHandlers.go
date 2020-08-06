@@ -1,6 +1,7 @@
 package apiHandlers
 
 import (
+  "reflect"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -346,4 +347,28 @@ func RemoveRaceHandler(w http.ResponseWriter, r *http.Request, token *models.Tok
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(body))
+}
+
+func SchemaHandler(w http.ResponseWriter, r *http.Request){
+  var event models.Event
+  t := reflect.TypeOf(event)
+
+  schema := make(map[string]string) // [keyname]type
+
+  for i := 0; i < t.NumField(); i++ {
+    field := t.Field(i)
+    json_keyname := field.Tag.Get("json")
+    typename := field.Type.Name()
+    schema[json_keyname] = typename
+  }
+
+  body,err := json.Marshal(schema)
+  if err != nil {
+    log.Println(err)
+    w.WriteHeader(http.StatusInternalServerError)
+    return
+  }
+
+  w.WriteHeader(http.StatusOK)
+  w.Write([]byte(body))
 }

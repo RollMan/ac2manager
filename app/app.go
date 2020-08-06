@@ -35,6 +35,7 @@ func main() {
 	r.HandleFunc("/api/past_races", apiHandlers.PastRacesHandler).Methods("GET")
 	r.HandleFunc("/api/future_races", apiHandlers.FutureRacesHandler).Methods("GET")
 	r.HandleFunc("/api/server_status", apiHandlers.ServerStatusHandler).Methods("GET")
+  r.HandleFunc("/api/schema", apiHandlers.SchemaHandler).Methods("GET")
 	r.HandleFunc("/api/login", apiHandlers.LoginHandler).Methods("POST")
 
 	// API requiring authentication
