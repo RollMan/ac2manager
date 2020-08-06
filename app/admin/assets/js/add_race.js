@@ -49,6 +49,15 @@
   submit_button.addEventListener("click", function(){
     const form_html_element = document.querySelector("form#add_race")
     const form_data = new FormData(form_html_element);
+
+    const date = form_data.get("startdatedate")
+    const time = form_data.get("startdatetime")
+    form_data.delete("startdatedate")
+    form_data.delete("startdatetime")
+
+    const datetime_rfc3339 = date + "T" + time + ":00+09:00"
+    form_data.append("startdate", datetime_rfc3339)
+
     fetch('/api/add_race', {
       method: 'POST',
       body: form_data,
