@@ -21,9 +21,14 @@ import {table_template} from "/assets/js/event_table_template.js";
         }
         return response.json();
     }).then(response => {
-      let body = "";
+      let body = "<table>";
       for (let e_idx = 0; e_idx < response.length; e_idx++){
-        body += table_template(response[e_idx]);
+        for (let field in response[e_idx]) {
+          let key = field;
+          let value = response[e_idx][field]
+          body += `<tr><td>${key}</td><td>${value}</td>`
+        }
+        body += "</table>"
       }
       event_table_div.innerHTML = body
     });
