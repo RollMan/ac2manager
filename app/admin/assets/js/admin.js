@@ -21,8 +21,9 @@ import {table_template} from "/assets/js/event_table_template.js";
         }
         return response.json();
     }).then(response => {
-      let body = "<table>";
+      let body = "";
       for (let e_idx = 0; e_idx < response.length; e_idx++){
+        body += "<h3>Race" + e_idx + "</h3><table>"
         for (let field in response[e_idx]) {
           let key = field;
           let value = response[e_idx][field]

@@ -1,6 +1,7 @@
 package apiHandlers
 
 import (
+  "strings"
   "reflect"
 	"database/sql"
 	"encoding/json"
@@ -15,6 +16,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+  "github.com/mholt/binding"
 )
 
 type TokenClaims struct {
@@ -253,18 +255,27 @@ func checkUserPw(userid []byte, pw []byte) error {
 func AddRaceHandler(w http.ResponseWriter, r *http.Request, token *models.TokenClaims) {
 	var err error
 	var event models.Event
-	if r.Header.Get("Content-Type") != "application/json" {
-		log.Println("Invalid, not application/json request for login received.")
+  if strings.Contains(r.Header.Get("Content-Type"), "multipart/form-data") {
+    err := binding.Bind(r, &event)
+    if err != nil {
+      log.Println(err)
+      w.WriteHeader(http.StatusInternalServerError)
+      return
+    }
+    log.Println(r)
+    log.Println(event)
+  }else if r.Header.Get("Content-Type") == "application/json" {
+    err = ParseJSONBody(r, &event)
+    if err != nil {
+      log.Println(err)
+      w.WriteHeader(http.StatusInternalServerError)
+      return
+    }
+  }else {
+    log.Println("Invalid, not application/json request for login received.")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = ParseJSONBody(r, &event)
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
 	var events []models.Event
 	_, err = db.DbMap.Select(&events, "SELECT * FROM events")
 	if err != nil {

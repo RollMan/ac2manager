@@ -1,8 +1,10 @@
 package models
 
 import (
+  "net/http"
 	jwt "github.com/dgrijalva/jwt-go"
 	"time"
+  "github.com/mholt/binding"
 )
 
 type NextRaceData struct {
@@ -42,6 +44,31 @@ type Event struct {
 	IsMandatoryPitstopTyreChangeRequired bool      `json:"is_mandatory_pitstop_tyre_change_required" db:"isMandatoryPitstopTyreChangeRequired"`
 	IsMandatoryPitstopSwapDriverRequired bool      `json:"is_mandatory_pitstop_swap_driver_required" db:"isMandatoryPitstopSwapDriverRequired"`
 	TyreSetCount                         int       `json:"tyre_set_count" db:"tyreSetCount"`
+}
+
+func (e *Event) FieldMap(r *http.Request) binding.FieldMap {
+  return binding.FieldMap{
+    &e.Id                                  : "id",
+&e.Startdate                               : "startdate",
+&e.Track                                   : "track",
+&e.WeatherRandomness                       : "weather_randomness",
+&e.P_hourOfDay                             : "P_hourOfDay",
+&e.P_timeMultiplier                        : "P_timeMultiplier",
+&e.P_sessionDurationMinute                 : "P_sessionDurationMinute",
+&e.Q_hourOfDay                             : "Q_hourOfDay",
+&e.Q_timeMultiplier                        : "Q_timeMultiplier",
+&e.Q_sessionDurationMinute                 : "Q_sessionDurationMinute",
+&e.R_hourOfDay                             : "R_hourOfDay",
+&e.R_timeMultiplier                        : "R_timeMultiplier",
+&e.R_sessionDurationMinute                 : "R_sessionDurationMinute",
+&e.PitWindowLengthSec                      : "pit_window_length_sec",
+&e.IsRefuellingAllowedInRace               : "is_refuelling_allowed_in_race",
+&e.MandatoryPitstopCount                   : "mandatory_pitstop_count",
+&e.IsMandatoryPitstopRefuellingRequired    : "is_mandatory_pitstop_refuelling_required",
+&e.IsMandatoryPitstopTyreChangeRequired    : "is_mandatory_pitstop_tyre_change_required",
+&e.IsMandatoryPitstopSwapDriverRequired    : "is_mandatory_pitstop_swap_driver_required",
+&e.TyreSetCount                            : "tyre_set_count",
+  }
 }
 
 type NoSuchUserError struct{}
