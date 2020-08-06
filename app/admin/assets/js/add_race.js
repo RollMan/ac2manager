@@ -3,7 +3,6 @@
   const result_div = document.querySelector('div#event_add_result')
   const submit_button = document.querySelector('button#submit_race')
 
-  let schema;
 
   fetch('/api/schema', {
     method: 'GET',
@@ -25,6 +24,25 @@
       return response.json()
     })
     .then(response => {
-      schema = response;
+      let schema = response;
+      let body = "<table>";
+      for (let field in schema) {
+        let key = field;
+        let type = schema[field];
+        let row = `<tr><td>${key}</td>`;
+        if (key == "id") continue;
+        if (type == "int" || type == "uint"){
+          row += `<td><input type="number" id="${key}" name="${key}"></td>`;
+        }else if (type == "string"){
+          row += `<td><input type="text" id="${key}" name="${key}"></td>`;
+        }else if (type == "bool"){
+          row += `<td><input type="checkbox" id="${key}" name="${key}"></td>`;
+        }else if (type == "Time"){
+          row += `<td><input type="date" id="${key}date" name="${key}date"><br><input type="time" id="${key}time" name="${key}time"></td>`;
+        }
+        body += row + "</tr>";
+      }
+      body += "</table>"
+      event_table_for_edit_div.innerHTML = body;
     });
 })();
