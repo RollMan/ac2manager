@@ -373,7 +373,7 @@ func EditEventHandler(w http.ResponseWriter, r *http.Request, token *models.Toke
 }
 
 func StaticWithAuth(w http.ResponseWriter, r *http.Request, token *models.TokenClaims){
-  handler := http.StripPrefix("/admin/", http.FileServer(http.Dir("admin/")))
+  handler := http.StripPrefix("/admin/", http.FileServer(http.Dir("static/admin/")))
   log.Println(handler)
   handler.ServeHTTP(w, r)
 }

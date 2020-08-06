@@ -43,7 +43,7 @@ func main() {
 	r.HandleFunc("/api/remove_race", handlers.AuthMiddleware(apiHandlers.RemoveRaceHandler)).Methods("POST")
 
 	// Public
-  r.PathPrefix("/").Handler(http.FileServer(http.Dir("static/")))
+  r.PathPrefix("/").Handler(http.FileServer(http.Dir("static/static/")))
 
 	log.Fatal(http.ListenAndServe(":80", r))
 }
