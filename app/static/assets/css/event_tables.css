@@ -1,0 +1,19 @@
+div.events table {
+  border-collapse: collapse;
+  width:70%;
+  border-top: 1px solid #333;
+}
+
+div.events th,td {
+  width: 350px;
+  padding: 10px;
+  vertical-align: top;
+}
+
+div.events tr {
+  border-bottom: 1px solid #333;
+}
+
+div.events tr:nth-child(even) {
+  background: #D9D9D9;
+}
