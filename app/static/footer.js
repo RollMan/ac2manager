@@ -25,7 +25,7 @@
         <div class="col-3 col-6-medium col-12-small">
           <ul>
             <li>Twitter: <a href="https://twitter.com/rollman054">@rollman054</a></li>
-            <li>Email: <img src="nsuksfftrdd.png"></li>
+            <li>Email: <img src="/nsuksfftrdd.png"></li>
           </ul>
         </div>
       </div>

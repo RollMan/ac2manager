@@ -1,10 +1,9 @@
-import {table_template} from /assets/js/event_table_template.js;
-
+import {table_template} from "/assets/js/event_table_template.js";
 (function(){
   const event_table_div = document.querySelector('div#event-tables-div')
   function show_all_events (){
     fetch('/api/races', {
-      method: 'POST',
+      method: 'GET',
       headers: {'Content-Type': 'application/json'}
     })
     .then(response => {
@@ -23,8 +22,8 @@ import {table_template} from /assets/js/event_table_template.js;
         return response.json();
     }).then(response => {
       let body = "";
-      for e in response {
-        body += table_template(e);
+      for (let e_idx = 0; e_idx < response.length; e_idx++){
+        body += table_template(response[e_idx]);
       }
       event_table_div.innerHTML = body
     });

@@ -1,5 +1,5 @@
-export function table_template = ({id, startdate, track, weather_randomness, P_hourOfDay, P_timeMultiplier, P_sessionDurationMinute,  Q_hourOfDay, Q_timeMultiplier, Q_sessionDurationMinute, R_hourOfDay, R_timeMultiplier, R_sessionDurationMinute, pit_window_length_sec, is_refuelling_allowed_in_race, mandatory_pitstop_count, is_mandatory_pitstop_refuelling_required, is_mandatory_pitstop_tyre_change_required, is_mandatory_pitstop_swap_driver_required, tyre_set_count}) => {
-    return 
+export function table_template ({id, startdate, track, weather_randomness, P_hourOfDay, P_timeMultiplier, P_sessionDurationMinute,  Q_hourOfDay, Q_timeMultiplier, Q_sessionDurationMinute, R_hourOfDay, R_timeMultiplier, R_sessionDurationMinute, pit_window_length_sec, is_refuelling_allowed_in_race, mandatory_pitstop_count, is_mandatory_pitstop_refuelling_required, is_mandatory_pitstop_tyre_change_required, is_mandatory_pitstop_swap_driver_required, tyre_set_count}) {
+  const res = 
     `<table><tr>
     <td>ID</td><td>${id}</td>
     </tr>
@@ -58,3 +58,5 @@ export function table_template = ({id, startdate, track, weather_randomness, P_h
     <tr>
     <td>Tyre Set Count</td><td>${tyre_set_count}</td>
     </tr></table>`;
+  return res;
+}

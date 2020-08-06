@@ -25,7 +25,7 @@ type Event struct {
 	Id                                   uint      `json:"id" db:"id, primarykey"`
 	Startdate                            time.Time `json:"startdate" db:"startdate"`
 	Track                                string    `json:"track" db:"track"`
-	WeatherRandomness                    int       `json:"weatherrandomness" db:"weatherRandomness"`
+	WeatherRandomness                    int       `json:"weather_randomness" db:"weatherRandomness"`
 	P_hourOfDay                          int       `json:"P_hourOfDay" db:"P_hourOfDay"`
 	P_timeMultiplier                     int       `json:"P_timeMultiplier" db:"P_timeMultiplier"`
 	P_sessionDurationMinute              int       `json:"P_sessionDurationMinute" db:"P_sessionDurationMinute"`
@@ -35,13 +35,13 @@ type Event struct {
 	R_hourOfDay                          int       `json:"R_hourOfDay" db:"R_hourOfDay"`
 	R_timeMultiplier                     int       `json:"R_timeMultiplier" db:"R_timeMultiplier"`
 	R_sessionDurationMinute              int       `json:"R_sessionDurationMinute" db:"R_sessionDurationMinute"`
-	PitWindowLengthSec                   int       `json:"pitWindowLengthSec" db:"pitWindowLengthSec"`
-	IsRefuellingAllowedInRace            bool      `json:"isRefuellingAllowedInRace" db:"isRefuellingAllowedInRace"`
-	MandatoryPitstopCount                int       `json:"mandatoryPitstopCount" db:"mandatoryPitstopCount"`
-	IsMandatoryPitstopRefuellingRequired bool      `json:"isMandatoryPitstopRefuellingRequired" db:"isMandatoryPitstopRefuellingRequired"`
-	IsMandatoryPitstopTyreChangeRequired bool      `json:"isMandatoryPitstopTyreChangeRequired" db:"isMandatoryPitstopTyreChangeRequired"`
-	IsMandatoryPitstopSwapDriverRequired bool      `json:"isMandatoryPitstopSwapDriverRequired" db:"isMandatoryPitstopSwapDriverRequired"`
-	TyreSetCount                         int       `json:"tyreSetCount" db:"tyreSetCount"`
+	PitWindowLengthSec                   int       `json:"pit_window_length_sec" db:"pitWindowLengthSec"`
+	IsRefuellingAllowedInRace            bool      `json:"is_refuelling_allowed_in_race" db:"isRefuellingAllowedInRace"`
+	MandatoryPitstopCount                int       `json:"mandatory_pitstop_count" db:"mandatoryPitstopCount"`
+	IsMandatoryPitstopRefuellingRequired bool      `json:"is_mandatory_pitstop_refuelling_required" db:"isMandatoryPitstopRefuellingRequired"`
+	IsMandatoryPitstopTyreChangeRequired bool      `json:"is_mandatory_pitstop_tyre_change_required" db:"isMandatoryPitstopTyreChangeRequired"`
+	IsMandatoryPitstopSwapDriverRequired bool      `json:"is_mandatory_pitstop_swap_driver_required" db:"isMandatoryPitstopSwapDriverRequired"`
+	TyreSetCount                         int       `json:"tyre_set_count" db:"tyreSetCount"`
 }
 
 type NoSuchUserError struct{}
