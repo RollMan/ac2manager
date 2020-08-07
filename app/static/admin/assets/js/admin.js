@@ -22,7 +22,9 @@
     }).then(response => {
       let body = "";
       for (let e_idx = 0; e_idx < response.length; e_idx++){
-        body += "<h3>Race" + e_idx + "</h3><table>"
+        const id = response[e_idx].id
+        body += "<h3>Race" + e_idx + ` <a href=/admin/edit_race.html?id=${id}><i class="material-icons">create</i></a></h3>`
+        body += "<table>"
         for (let field in response[e_idx]) {
           let key = field;
           let value = response[e_idx][field]
