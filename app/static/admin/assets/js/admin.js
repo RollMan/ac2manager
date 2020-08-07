@@ -26,7 +26,7 @@
         for (let field in response[e_idx]) {
           let key = field;
           let value = response[e_idx][field]
-          body += `<tr><td>${key}</td><td>${value}</td>`
+          body += `<tr><td>${key}</td><td>${value}</td></tr>`
         }
         body += "</table>"
       }

@@ -33,7 +33,14 @@ import { parseISO, formatRFC3339 } from 'date-fns'
         const time_zone = 'Asia/Tokyo'
         const time_jst_string = formatRFC3339(startdate, {'timeZone': time_zone})
         response.startdate = time_jst_string
-        let body = JSON.stringify(response);
+        delete response.id;
+        let body = "<table>"
+        for (let field in response) {
+          let key = field;
+          let value = response[field]
+          body += `<tr><td>${key}</td><td>${value}</td></tr>`
+        }
+        body += '</table>'
         upcoming_race_div.innerHTML = "<p>" + body + "</p>"
       }
     });
