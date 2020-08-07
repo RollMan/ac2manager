@@ -1,3 +1,4 @@
+
 (function(){
   function fetch_upcoming(){
     const upcoming_race_div = document.querySelector('div#upcoming_race')
@@ -26,6 +27,11 @@
       if(response.length == 0){
         upcoming_race_div.innerHTML = "<p>No races scheduled.</p>";
       }else{
+        const startdate = parseISO(response.startdate)
+        const time_zone = 'Asia/Tokyo'
+        const time_jst = utcToZonedTime(startdate, time_zone)
+        const time_jst_string = formatRFC3339(time_jst)
+        response.startdate = time_jst_string
         let body = JSON.stringify(response);
         upcoming_race_div.innerHTML = "<p>" + body + "</p>"
       }

@@ -1,4 +1,3 @@
-import {table_template} from "/assets/js/event_table_template.js";
 (function(){
   const event_table_div = document.querySelector('div#event-tables-div')
   function show_all_events (){
