@@ -383,3 +383,45 @@ func SchemaHandler(w http.ResponseWriter, r *http.Request){
   w.WriteHeader(http.StatusOK)
   w.Write([]byte(body))
 }
+
+func RaceByIdHandler(w http.ResponseWriter, r *http.Request){
+	var event models.Event
+  if r.Header.Get("Content-Type") == "application/json" {
+    err := ParseJSONBody(r, &event)
+    if err != nil {
+      log.Println(err)
+      w.WriteHeader(http.StatusInternalServerError)
+      return
+    }
+  }else {
+    log.Println("Invalid, not application/json request for login received.")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	{
+    id := event.Id
+		err := db.DbMap.SelectOne(&event, "SELECT * FROM events WHERE id = ?;", id)
+
+		if err != nil {
+			log.Printf("%v\n", err)
+			body := fmt.Sprintf("%v\n", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(body))
+			return
+		}
+	}
+
+	{
+		body, err := json.Marshal(event)
+		if err != nil {
+			body := []byte(fmt.Sprintf("%v\n", err))
+			log.Println(body)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(body)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(body)
+	}
+}

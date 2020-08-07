@@ -31,6 +31,7 @@ func main() {
 
 	// API for public
 	r.HandleFunc("/api/races", apiHandlers.RacesHandler).Methods("GET")
+  r.HandleFunc("/api/race_by_id", apiHandlers.RaceByIdHandler).Methods("GET")
 	r.HandleFunc("/api/upcoming_race", apiHandlers.UpcomingRaceHandler).Methods("GET")
 	r.HandleFunc("/api/past_races", apiHandlers.PastRacesHandler).Methods("GET")
 	r.HandleFunc("/api/future_races", apiHandlers.FutureRacesHandler).Methods("GET")
