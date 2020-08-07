@@ -1,3 +1,4 @@
+import { parseISO, formatRFC3339 } from 'date-fns'
 
 (function(){
   function fetch_upcoming(){
@@ -23,14 +24,14 @@
         }
         return response.json()
       })
-    .then(response => {
-      if(response.length == 0){
+    .then(responses => {
+      if(responses.length == 0){
         upcoming_race_div.innerHTML = "<p>No races scheduled.</p>";
       }else{
+        let response = responses[0]
         const startdate = parseISO(response.startdate)
         const time_zone = 'Asia/Tokyo'
-        const time_jst = utcToZonedTime(startdate, time_zone)
-        const time_jst_string = formatRFC3339(time_jst)
+        const time_jst_string = formatRFC3339(startdate, {'timeZone': time_zone})
         response.startdate = time_jst_string
         let body = JSON.stringify(response);
         upcoming_race_div.innerHTML = "<p>" + body + "</p>"

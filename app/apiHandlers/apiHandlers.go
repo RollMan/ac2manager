@@ -75,7 +75,7 @@ func UpcomingRaceHandler(w http.ResponseWriter, r *http.Request) {
 	event := make([]models.Event, 1)
 	var isNextRace bool = true
 	now := time.Now()
-	err := db.DbMap.SelectOne(&event[0], "SELECT * FROM events WHERE events.startdate >= CONVERT(?, DATETIME) ORDER BY startdate ASC;", now)
+	err := db.DbMap.SelectOne(&event[0], "SELECT * FROM events WHERE events.startdate >= CONVERT(?, DATETIME) ORDER BY startdate ASC LIMIT 1;", now)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
