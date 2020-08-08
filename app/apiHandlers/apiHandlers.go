@@ -386,15 +386,15 @@ func SchemaHandler(w http.ResponseWriter, r *http.Request){
 
 func RaceByIdHandler(w http.ResponseWriter, r *http.Request){
 	var event models.Event
-  if r.Header.Get("Content-Type") == "application/json" {
-    err := ParseJSONBody(r, &event)
+  if r.Header.Get("Content-Type") == "" {
+    err := binding.Bind(r, &event)
     if err != nil {
       log.Println(err)
       w.WriteHeader(http.StatusInternalServerError)
       return
     }
   }else {
-    log.Println("Invalid, not application/json request for login received.")
+    log.Println("Invalid content type.")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

@@ -16,7 +16,8 @@ module.exports = [{
   mode: "development",
   entry: {
     "admin": "./admin/assets/js/admin.js",
-    "add_race": "./admin/assets/js/add_race.js"
+    "add_race": "./admin/assets/js/add_race.js",
+    "edit_race": "./admin/assets/js/edit_race.js"
   },
   output: {
     filename: "[name].bundle.js",
