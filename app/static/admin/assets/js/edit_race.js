@@ -2,6 +2,9 @@ import { parseISO, format } from 'date-fns'
 
 (function(){
   const event_div = document.querySelector("div#event_edit_table");
+  const submit_button = document.querySelector("button#submit_race");
+  const edit_form = document.querySelector("form#edit_race")
+  const edit_result_div = document.querySelector("div#event_edit_result")
   const query_string = window.location.search;
 
   const query = [...new URLSearchParams(query_string).entries()].reduce((obj, e) => ({...obj, [e[0]]: e[1]}), {});
@@ -76,4 +79,80 @@ import { parseISO, format } from 'date-fns'
       event_div.innerHTML = body;
     })
   })
+
+  submit_race.addEventListener("click", function(){
+    const form_html_element = document.querySelector("form#edit_race")
+    const form_data = new FormData(form_html_element);
+
+    const date = form_data.get("startdatedate")
+    const time = form_data.get("startdatetime")
+    form_data.delete("startdatedate")
+    form_data.delete("startdatetime")
+
+    const datetime_rfc3339 = date + "T" + time + ":00+09:00";
+    form_data.append("startdate", datetime_rfc3339);
+
+    form_data.append("id", id);
+
+    fetch('/api/remove_race', {
+      method: 'POST',
+      headers: {"Content-Type": "application/json"},
+      body: `{"id": ${id}}`
+    })
+    .then(response => {
+        if (!response.ok) {
+          let body = "";
+          if (400 <= response.status && response.status < 500){
+            body = "<p>Client Error</p>"
+          }else if(500 <= response.status && response.status < 600){
+            body = "<p>Internal Server Error.</p>"
+          }else{
+            body = "<p>Unknown Error: " + response.status + ".</p>"
+          }
+          response.text().then(reason => {
+            edit_result_div.innerHTML = body + "<br>" + reason;
+          });
+          throw new Error("Remove race followed by add race failed")
+        }
+      return response.json()
+    })
+    .then(json => {
+      const removed_count = json.count;
+      if (removed_count != 1) {
+        let body = "";
+        if (removed_count == 0) {
+          body = `<p>Internal Server Error: id ${id} does not exist.</p>`
+        }else if (removed_count > 1) {
+          body = `<p>Internal Server Error: id ${id} corresponds to multiple entries and they were removed. Contact the administrator immediately.</p>`;
+        }
+        edit_result_div.innerHTML = body;
+        throw new Error("Remove Failed.")
+      }
+      fetch('/api/add_race', {
+        method: 'POST',
+        body: form_data,
+      })
+        .then(response => {
+          if (!response.ok) {
+            let body = "";
+            if (400 <= response.status && response.status < 500){
+              body = "<p>Client Error</p>"
+            }else if(500 <= response.status && response.status < 600){
+              body = "<p>Internal Server Error.</p>"
+            }else{
+              body = "<p>Unknown Error: " + response.status + ".</p>"
+            }
+            response.text().then(reason => {
+              edit_result_div.innerHTML = body + "<br>" + reason;
+            });
+            throw new Error("Add race failed")
+          }
+          return response.json()
+        })
+        .then(response => {
+          edit_result_div.innerHTML = "ok";
+        })
+    });
+    });
+
 })();
