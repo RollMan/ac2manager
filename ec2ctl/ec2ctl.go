@@ -2,29 +2,29 @@ package main
 
 import (
   "time"
-  "fmt"
+  "log"
 )
 
 func main(){
+  log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
   time.Local = time.FixedZone("GMT", 0)
   prev := time.Now()
-  fmt.Println(prev)
   for {
     now := time.Now()
-    sleep_by := now.Add(time.Minute * time.Duration(1))
+    sleep_by := now.Add(time.Minute * time.Duration(1)).Truncate(time.Minute)
     sleepUntilNextMinute(sleep_by)
-
 
     prev = now
   }
 }
 
 func sleepUntilNextMinute(target time.Time){
-}
-
-func roundDownIntoMinute(t time.Time) time.Time{
-  tSecond := t.Second()
-  subtracted := t.Add(time.Second * time.Duration(-tSecond))
-  rounded := subtracted.Round(time.Minute)
-  return rounded
+  t1 := time.Now()
+  toWait := target.Sub(t1) + time.Second
+  for toWait > 0 {
+    time.Sleep(toWait)
+    t2 := time.Now()
+    toWait = toWait - (t2.Sub(t1))
+    t1 = t2
+  }
 }
