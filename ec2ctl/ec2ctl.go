@@ -3,6 +3,8 @@ package main
 import (
   "time"
   "log"
+  "github.com/RollMan/ac2manager/ec2ctl/db"
+  "github.com/RollMan/ac2manager/ec2ctl/jobmng"
 )
 
 type WakeupKind int
@@ -16,6 +18,8 @@ const (
 func main(){
   log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
   time.Local = time.FixedZone("GMT", 0)
+  db.InitDB()
+  jobmng.InitQueue()
   prev := time.Now()
   for {
     var now time.Time
@@ -36,20 +40,20 @@ func main(){
 
     if timeDiffMinute == 1 {
       prev = now
-      find_jobs(prev)
+      jobmng.FindJobs(prev)
     }else{
       now_unixminute := int(now.Unix() / 60)
 
       for {
-        prev++
-        find_jobs(prev)
+        prev = prev.Add(time.Minute)
+        jobmng.FindJobs(prev)
         prev_unixminute := int(prev.Unix() / 60)
         if !(prev_unixminute < now_unixminute) {
           break
         }
       }
     }
-    runQueue()
+    jobmng.RunQueue()
   }
 }
 
