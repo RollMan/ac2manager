@@ -19,7 +19,7 @@ type AssistRules struct {
   disableAutoLights        int `json:"disableAutoLights"`
 }
 
-func (*t AssistRules) ParseConfig(filename string){
+func (t *AssistRules) ParseConfig(filename string){
   jsonFile, err := os.Open(filename)
   if err != nil {
     log.Fatalln(err)
@@ -45,7 +45,7 @@ type Settings struct {
     configVersion              int        `json:"configVersion"`
 }
 
-func (*t Settings) ParseConfig(filename string){
+func (t *Settings) ParseConfig(filename string){
   jsonFile, err := os.Open(filename)
   if err != nil {
     log.Fatalln(err)
@@ -65,7 +65,7 @@ type Session struct {
   sessionDurationMinutes  int   `json:"sessionDurationMinutes"`
 }
 
-func (*t Session) ParseConfig(filename string){
+func (t *Session) ParseConfig(filename string){
   jsonFile, err := os.Open(filename)
   if err != nil {
     log.Fatalln(err)
@@ -85,11 +85,11 @@ type Event struct {
           cloudLevel                                         float32
           rain                                               float32
           weatherRandomness                                  int
-          sessions                                           []session
+          sessions                                           []Session
           configVersion                                      int
 }
 
-func (*t Event) ParseConfig(filename string){
+func (t *Event) ParseConfig(filename string){
   jsonFile, err := os.Open(filename)
   if err != nil {
     log.Fatalln(err)
@@ -108,7 +108,7 @@ type Configuration struct {
     configVersion   int `json:"configVersion"`
 }
 
-func (*t Configuration) ParseConfig(filename string){
+func (t *Configuration) ParseConfig(filename string){
   jsonFile, err := os.Open(filename)
   if err != nil {
     log.Fatalln(err)

@@ -5,9 +5,10 @@ import (
   "io/ioutil"
   "log"
   "os"
+  "github.com/RollMan/ac2manager/app/models"
 )
 
-func readDefaultConfigs() (AssistRules, Settings, Event, Configuration){
+func ReadDefaultConfigs() (AssistRules, Settings, Event, Configuration){
   var assistRules AssistRules
   var settings Settings
   var event Event
@@ -21,3 +22,5 @@ func readDefaultConfigs() (AssistRules, Settings, Event, Configuration){
   return assistRules, settings, event, configuration
 }
 
+func SetConfigs(src models.Event, assistRules *AssistRules, settings *Settings, event *Event, conf *Configuration){
+}
