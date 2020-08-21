@@ -5,6 +5,7 @@ import (
   "log"
   "github.com/RollMan/ac2manager/ec2ctl/db"
   "github.com/RollMan/ac2manager/app/models"
+  "github.com/RollMan/ac2manager/ec2ctl/confjson"
 )
 
 var queue []models.Event
