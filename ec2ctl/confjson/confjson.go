@@ -7,7 +7,7 @@ import (
   "os"
 )
 
-func readConfigs() (AssistRules, Settings, Event, Configuration){
+func readDefaultConfigs() (AssistRules, Settings, Event, Configuration){
   var assistRules AssistRules
   var settings Settings
   var event Event
