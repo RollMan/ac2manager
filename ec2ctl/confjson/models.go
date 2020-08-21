@@ -57,11 +57,11 @@ func (t *Settings) ParseConfig(filename string) {
 }
 
 type Session struct {
-	HourOfDay              int `json:"hourOfDay"`
-	DayOfWeekend           int `json:"dayOfWeekend"`
-	TimeMultiplier         int `json:"timeMultiplier"`
-	SessionType            int `json:"sessionType"`
-	SessionDurationMinutes int `json:"sessionDurationMinutes"`
+	HourOfDay              int    `json:"hourOfDay"`
+	DayOfWeekend           int    `json:"dayOfWeekend"`
+	TimeMultiplier         int    `json:"timeMultiplier"`
+	SessionType            string `json:"sessionType"`
+	SessionDurationMinutes int    `json:"sessionDurationMinutes"`
 }
 
 func (t *Session) ParseConfig(filename string) {
