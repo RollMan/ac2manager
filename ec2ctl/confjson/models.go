@@ -118,3 +118,30 @@ func (t *Configuration) ParseConfig(filename string) {
 
 	json.Unmarshal([]byte(byteValue), t)
 }
+
+type EventRules struct {
+	qualifyStandingType                  int  `json:"qualifyStandingType"`
+	pitWindowLengthSec                   int  `json:"pitWindowLengthSec"`
+	driverStintTimeSec                   int  `json:"driverStintTimeSec"`
+	mandatoryPitstopCount                int  `json:"mandatoryPitstopCount"`
+	maxTotalDrivingTime                  int  `json:"maxTotalDrivingTime"`
+	maxDriversCount                      int  `json:"maxDriversCount"`
+	isRefuellingAllowedInRace            bool `json:"isRefuellingAllowedInRace"`
+	isRefuellingTimeFixed                bool `json:"isRefuellingTimeFixed"`
+	isMandatoryPitstopRefuellingRequired bool `json:"isMandatoryPitstopRefuellingRequired"`
+	isMandatoryPitstopTyreChangeRequired bool `json:"isMandatoryPitstopTyreChangeRequired"`
+	isMandatoryPitstopSwapDriverRequired bool `json:"isMandatoryPitstopSwapDriverRequired"`
+	tyreSetCount                         int  `json:"tyreSetCount"`
+}
+
+func (t *EventRules) ParseConfig(filename string) {
+	jsonFile, err := os.Open(filename)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	json.Unmarshal([]byte(byteValue), t)
+}
