@@ -22,7 +22,7 @@ func FindJobs(t time.Time) {
 	}
 }
 
-func selectJobsByDate(t time.Time) {
+func selectJobsByDate(t time.Time) []models.Event {
 	var events []models.Event
 	t1 := t
 	t2 := t.Add(time.Minute)
