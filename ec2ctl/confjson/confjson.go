@@ -1,28 +1,26 @@
 package confjson
 
 import (
-	"encoding/json"
 	"github.com/RollMan/ac2manager/app/models"
-	"io/ioutil"
-	"log"
-	"os"
 )
 
-func ReadDefaultConfigs() (AssistRules, Settings, Event, Configuration) {
+func ReadDefaultConfigs() (AssistRules, Settings, Event, Configuration, EventRules) {
 	var assistRules AssistRules
 	var settings Settings
 	var event Event
 	var configuration Configuration
+	var eventRules EventRules
 
 	assistRules.ParseConfig("assistRules.json")
 	settings.ParseConfig("settings.json")
 	event.ParseConfig("event.json")
 	configuration.ParseConfig("configuration.json")
+	eventRules.ParseConfig("eventRules.json")
 
-	return assistRules, settings, event, configuration
+	return assistRules, settings, event, configuration, eventRules
 }
 
-func SetConfigs(src models.Event, assistRules *AssistRules, settings *Settings, event *Event, conf *Configuration) {
+func SetConfigs(src models.Event, assistRules *AssistRules, settings *Settings, event *Event, conf *Configuration, eventRules *EventRules) {
 	event.Track = src.Track
 	event.WeatherRandomness = src.WeatherRandomness
 
@@ -50,4 +48,13 @@ func SetConfigs(src models.Event, assistRules *AssistRules, settings *Settings, 
 	}
 
 	event.Sessions = sessions
+
+	eventRules.PitWindowLengthSec = src.PitWindowLengthSec
+	eventRules.IsRefuellingAllowedInRace = src.IsRefuellingAllowedInRace
+	eventRules.MandatoryPitstopCount = src.MandatoryPitstopCount
+	eventRules.IsMandatoryPitstopRefuellingRequired = src.IsMandatoryPitstopRefuellingRequired
+	eventRules.IsMandatoryPitstopTyreChangeRequired = src.IsMandatoryPitstopTyreChangeRequired
+	eventRules.IsMandatoryPitstopSwapDriverRequired = src.IsMandatoryPitstopSwapDriverRequired
+	eventRules.TyreSetCount = src.TyreSetCount
+
 }
