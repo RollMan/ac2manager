@@ -1,6 +1,7 @@
 package ec2
 
 import (
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -43,7 +44,7 @@ func StartInstance(instanceId string) {
 	}
 }
 
-func DescribeInstance(instanceId string) []*ec2.Reservation {
+func DescribeInstance(instanceId string) *ec2.Instance {
 	input := &ec2.DescribeInstancesInput{
 		InstanceIds: []*string{
 			aws.String(instanceId),
@@ -58,7 +59,40 @@ func DescribeInstance(instanceId string) []*ec2.Reservation {
 		}
 	}
 
-	return result.Reservations
+	var instances []*ec2.Instance
+
+	for _, r := range result.Reservations {
+		for _, i := range r.Instances {
+			instances = append(instances, i)
+		}
+	}
+	if len(instances) != 1 {
+		log.Fatalln("There are more than one instances even though the instance is specified by ID.")
+	}
+	return instances[0]
+}
+
+func StopInstance(instanceId string) {
+	input := &ec2.StopInstancesInput{
+		InstanceIds: []*string{
+			aws.String(instanceId),
+		},
+		DryRun: aws.Bool(true),
+	}
+	result, err := Ec2Svc.StopInstances(input)
+	awsErr, ok := err.(awserr.Error)
+
+	if ok && awsErr.Code() == "DryRunOperation" {
+		input.DryRun = aws.Bool(false)
+		result, err = Ec2Svc.StopInstances(input)
+		if err != nil {
+			log.Println(err)
+		} else {
+			log.Println(result.StoppingInstances)
+		}
+	} else {
+		log.Println(err)
+	}
 }
 
 func DescribeInstanceStatus(instanceId string) []*ec2.InstanceStatus {
@@ -77,5 +111,19 @@ func DescribeInstanceStatus(instanceId string) []*ec2.InstanceStatus {
 		}
 	}
 
+	if len(result.InstanceStatuses) != 1 {
+		log.Fatalln("The number of reservations is not 1 even though the instance is specified by ID.")
+	}
+
 	return result.InstanceStatuses
+}
+
+func DescribeInstanceIPAddress(instanceId string) (string, error) {
+	instance := DescribeInstance(instanceId)
+	address_p := instance.PublicIpAddress
+	if address_p == nil {
+		return "", fmt.Errorf("No IP addresses. Is the instance running?")
+	}
+	address := *address_p
+	return address, nil
 }
