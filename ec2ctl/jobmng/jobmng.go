@@ -8,17 +8,34 @@ import (
 	"time"
 )
 
-var queue []models.Event
+type JobType int
+
+const (
+	_ JobType = iota
+	Start
+	Stop
+)
+
+type jobQueue struct {
+	JobType        JobType
+	Event          models.Event
+	LaunchSchedule time.Time
+}
+
+var queue []jobQueue
 
 func InitQueue() {
-	queue = make([]models.Event, 0)
+	queue = make([]jobQueue, 0)
 }
 
 func FindJobs(t time.Time) {
 	targetInMinute := t.Truncate(time.Minute)
 	events := selectJobsByDate(targetInMinute)
 	for _, e := range events {
-		queue = append(queue, e)
+		queue = append(queue, jobQueue{Start, e, e.Startdate})
+		extra := time.Minute * 10
+		enddate := e.Startdate.Add(time.Minute*time.Duration(e.P_sessionDurationMinute+e.Q_sessionDurationMinute+e.R_sessionDurationMinute) + extra)
+		queue = append(queue, jobQueue{Stop, e, enddate})
 	}
 }
 
@@ -35,17 +52,17 @@ func selectJobsByDate(t time.Time) []models.Event {
 }
 
 func RunQueue() {
-	virtualQueue := make([]models.Event, len(queue))
+	virtualQueue := make([]jobQueue, len(queue))
 	copy(virtualQueue, queue)
-	queue = make([]models.Event, 0)
+	queue = make([]jobQueue, 0)
 
 	go RunInstanse(virtualQueue)
 }
 
-func RunInstanse(virtualQueue []models.Event) {
+func RunInstanse(virtualQueue []jobQueue) {
 	for _, q := range virtualQueue {
 		assistRules, settings, event, configuration, eventRules := confjson.ReadDefaultConfigs()
-		confjson.SetConfigs(q, &assistRules, &settings, &event, &configuration, &eventRules)
+		confjson.SetConfigs(q.Event, &assistRules, &settings, &event, &configuration, &eventRules)
 		// TODO
 	}
 }
