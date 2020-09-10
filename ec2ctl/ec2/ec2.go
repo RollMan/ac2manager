@@ -21,6 +21,7 @@ func InitAWS() {
 	Ec2Svc = ec2.New(Sess)
 }
 
+// TODO: return error when fail
 func StartInstance(instanceId string) {
 	input := &ec2.StartInstancesInput{
 		InstanceIds: []*string{
@@ -35,15 +36,16 @@ func StartInstance(instanceId string) {
 		input.DryRun = aws.Bool(false)
 		result, err = Ec2Svc.StartInstances(input)
 		if err != nil {
-			log.Println(err)
+			log.Fatalln(err)
 		} else {
 			log.Println(result.StartingInstances)
 		}
 	} else {
-		log.Println(err)
+		log.Fatalln(err)
 	}
 }
 
+// TODO: return error when fail
 func DescribeInstance(instanceId string) *ec2.Instance {
 	input := &ec2.DescribeInstancesInput{
 		InstanceIds: []*string{
@@ -72,6 +74,7 @@ func DescribeInstance(instanceId string) *ec2.Instance {
 	return instances[0]
 }
 
+// TODO: return error when fail
 func StopInstance(instanceId string) {
 	input := &ec2.StopInstancesInput{
 		InstanceIds: []*string{
@@ -86,15 +89,16 @@ func StopInstance(instanceId string) {
 		input.DryRun = aws.Bool(false)
 		result, err = Ec2Svc.StopInstances(input)
 		if err != nil {
-			log.Println(err)
+			log.Fatalln(err)
 		} else {
 			log.Println(result.StoppingInstances)
 		}
 	} else {
-		log.Println(err)
+		log.Fatalln(err)
 	}
 }
 
+// TODO: return error when fail
 func DescribeInstanceStatus(instanceId string) []*ec2.InstanceStatus {
 	input := &ec2.DescribeInstanceStatusInput{
 		InstanceIds: []*string{
