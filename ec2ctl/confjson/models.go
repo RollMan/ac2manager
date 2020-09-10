@@ -7,6 +7,10 @@ import (
 	"os"
 )
 
+type Rule interface {
+	ParseConfig(string)
+}
+
 type AssistRules struct {
 	DisableIdealLine         int `json:"disableIdealLine"`
 	DisableAutosteer         int `json:"disableAutosteer"`

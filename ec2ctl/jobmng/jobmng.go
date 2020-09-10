@@ -1,10 +1,15 @@
 package jobmng
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/RollMan/ac2manager/app/models"
 	"github.com/RollMan/ac2manager/ec2ctl/confjson"
 	"github.com/RollMan/ac2manager/ec2ctl/db"
+	"github.com/RollMan/ac2manager/ec2ctl/ec2"
+	"io/ioutil"
 	"log"
+	"os"
 	"time"
 )
 
@@ -20,6 +25,11 @@ type jobQueue struct {
 	JobType        JobType
 	Event          models.Event
 	LaunchSchedule time.Time
+}
+
+type ruleFile struct {
+	rule     confjson.Rule
+	filename string
 }
 
 var queue []jobQueue
@@ -59,10 +69,48 @@ func RunQueue() {
 	go RunInstanse(virtualQueue)
 }
 
-func RunInstanse(virtualQueue []jobQueue) {
+func RunInstanse(virtualQueue []jobQueue) error {
+	const max_retry = 100
 	for _, q := range virtualQueue {
-		assistRules, settings, event, configuration, eventRules := confjson.ReadDefaultConfigs()
-		confjson.SetConfigs(q.Event, &assistRules, &settings, &event, &configuration, &eventRules)
-		// TODO
+		retry := max_retry
+		// Select instance to deploy
+		// FIXME: create instance from an AMI and to select an available instance.
+		id := ""
+		if q.JobType == Stop {
+			ec2.StopInstance(id)
+		} else if q.JobType == Start {
+			assistRules, settings, event, configuration, eventRules := confjson.ReadDefaultConfigs()
+			confjson.SetConfigs(q.Event, &assistRules, &settings, &event, &configuration, &eventRules)
+
+			conf_dir_path := "/opt/ac2manager/" + id
+			err := os.MkdirAll(conf_dir_path, 0777)
+			if err != nil {
+				ec2.StopInstance(id)
+				return fmt.Errorf("Failed to create directory: %s", conf_dir_path)
+			}
+
+			rules := []ruleFile{
+				ruleFile{assistRules, "assistRules.json"},
+				ruleFile{settings, "settings.json"},
+				ruleFile{configuration, "configuration.json"},
+				ruleFile{event, "event.json"},
+				ruleFIle{eventRules, "eventRules.json"},
+			}
+
+			for _, r := range rules {
+				json, err := json.Marshal(r.rule)
+				if err != nil {
+					return fmt.Errorf("Failed to marshal a json: %s.\n%v", r.filename, r.rule)
+				}
+				conf_path := conf_dir_path + "/" + r.filename
+				err = ioutil.WriteFile(conf_path, json, 0644)
+				if err != nil {
+					return fmt.Errorf("Failed to write a json of %s.\n%v", conf_path, json)
+				}
+			}
+
+			ec2.StartInstance(id)
+		}
 	}
+	return nil
 }
