@@ -70,9 +70,7 @@ func RunQueue() {
 }
 
 func RunInstanse(virtualQueue []jobQueue) error {
-	const max_retry = 100
 	for _, q := range virtualQueue {
-		retry := max_retry
 		// Select instance to deploy
 		// FIXME: create instance from an AMI and to select an available instance.
 		id := ""
@@ -80,7 +78,7 @@ func RunInstanse(virtualQueue []jobQueue) error {
 			ec2.StopInstance(id)
 		} else if q.JobType == Start {
 			assistRules, settings, event, configuration, eventRules := confjson.ReadDefaultConfigs()
-			confjson.SetConfigs(q.Event, &assistRules, &settings, &event, &configuration, &eventRules)
+			confjson.SetConfigs(q.Event, assistRules, settings, event, configuration, eventRules)
 
 			conf_dir_path := "/opt/ac2manager/" + id
 			err := os.MkdirAll(conf_dir_path, 0777)
@@ -94,7 +92,7 @@ func RunInstanse(virtualQueue []jobQueue) error {
 				ruleFile{settings, "settings.json"},
 				ruleFile{configuration, "configuration.json"},
 				ruleFile{event, "event.json"},
-				ruleFIle{eventRules, "eventRules.json"},
+				ruleFile{eventRules, "eventRules.json"},
 			}
 
 			for _, r := range rules {

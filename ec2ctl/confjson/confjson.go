@@ -4,12 +4,12 @@ import (
 	"github.com/RollMan/ac2manager/app/models"
 )
 
-func ReadDefaultConfigs() (AssistRules, Settings, Event, Configuration, EventRules) {
-	var assistRules AssistRules
-	var settings Settings
-	var event Event
-	var configuration Configuration
-	var eventRules EventRules
+func ReadDefaultConfigs() (*AssistRules, *Settings, *Event, *Configuration, *EventRules) {
+	var assistRules *AssistRules = &AssistRules{}
+	var settings *Settings = &Settings{}
+	var event *Event = &Event{}
+	var configuration *Configuration = &Configuration{}
+	var eventRules *EventRules = &EventRules{}
 
 	assistRules.ParseConfig("assistRules.json")
 	settings.ParseConfig("settings.json")
