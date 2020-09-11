@@ -1,6 +1,8 @@
 package ec2
 
 import (
+	_ "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"testing"
@@ -11,8 +13,11 @@ type mockedInstance struct {
 	Resp ec2.StartInstancesOutput
 }
 
-func (m mockedInstance) StartInstances(*ec2.StartInstancesInput) (*ec2.StartInstancesOutput, error) {
+func (m mockedInstance) StartInstances(i *ec2.StartInstancesInput) (*ec2.StartInstancesOutput, error) {
 	// TODO: FIXME: return error when dry run
+	if *i.DryRun == true {
+		return nil, awserr.New("DryRunOperation", "", nil)
+	}
 	return &m.Resp, nil
 }
 
