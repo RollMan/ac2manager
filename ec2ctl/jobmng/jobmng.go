@@ -64,22 +64,22 @@ func selectJobsByDate(t time.Time, dbMap *gorp.DbMap) []models.Event {
 	return events
 }
 
-func RunQueue(queue []jobQueue) []jobQueue {
+func RunQueue(queue []jobQueue, ec2svc ec2.Ec2) []jobQueue {
 	virtualQueue := make([]jobQueue, len(queue))
 	copy(virtualQueue, queue)
 	queue = make([]jobQueue, 0)
 
-	go RunInstanse(virtualQueue)
+	go RunInstanse(virtualQueue, ec2svc)
 	return queue
 }
 
-func RunInstanse(virtualQueue []jobQueue) error {
+func RunInstanse(virtualQueue []jobQueue, ec2svc ec2.Ec2) error {
 	for _, q := range virtualQueue {
 		// Select instance to deploy
 		// FIXME: create instance from an AMI and to select an available instance.
 		id := ""
 		if q.JobType == Stop {
-			ec2.StopInstance(id)
+			ec2svc.StopInstance(id)
 		} else if q.JobType == Start {
 			assistRules, settings, event, configuration, eventRules := confjson.ReadDefaultConfigs()
 			confjson.SetConfigs(q.Event, assistRules, settings, event, configuration, eventRules)
@@ -87,7 +87,7 @@ func RunInstanse(virtualQueue []jobQueue) error {
 			conf_dir_path := "/opt/ac2manager/" + id
 			err := os.MkdirAll(conf_dir_path, 0777)
 			if err != nil {
-				ec2.StopInstance(id)
+				ec2svc.StopInstance(id)
 				return fmt.Errorf("Failed to create directory: %s", conf_dir_path)
 			}
 
@@ -111,7 +111,7 @@ func RunInstanse(virtualQueue []jobQueue) error {
 				}
 			}
 
-			ec2.StartInstance(id)
+			ec2svc.StartInstance(id)
 		}
 	}
 	return nil

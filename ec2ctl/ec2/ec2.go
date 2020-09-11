@@ -9,32 +9,36 @@ import (
 	"log"
 )
 
-var Sess *session.Session
-var Ec2Svc *ec2.EC2
+type Ec2 struct {
+	svc *ec2.EC2
+}
 
-func InitAWS() {
-	Sess = session.Must(session.NewSessionWithOptions(session.Options{
+func InitAWS() Ec2 {
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		Config:            aws.Config{Region: aws.String("ap-northeast-1")}, // Tokyo
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 
-	Ec2Svc = ec2.New(Sess)
+	svc := ec2.New(sess)
+
+	ec2svc := Ec2{svc}
+	return ec2svc
 }
 
 // TODO: return error when fail
-func StartInstance(instanceId string) {
+func (ec2svc *Ec2) StartInstance(instanceId string) {
 	input := &ec2.StartInstancesInput{
 		InstanceIds: []*string{
 			aws.String(instanceId),
 		},
 		DryRun: aws.Bool(true),
 	}
-	result, err := Ec2Svc.StartInstances(input)
+	result, err := ec2svc.svc.StartInstances(input)
 	awsErr, ok := err.(awserr.Error)
 
 	if ok && awsErr.Code() == "DryRunOperation" {
 		input.DryRun = aws.Bool(false)
-		result, err = Ec2Svc.StartInstances(input)
+		result, err = ec2svc.svc.StartInstances(input)
 		if err != nil {
 			log.Fatalln(err)
 		} else {
@@ -46,13 +50,13 @@ func StartInstance(instanceId string) {
 }
 
 // TODO: return error when fail
-func DescribeInstance(instanceId string) *ec2.Instance {
+func (ec2svc *Ec2) DescribeInstance(instanceId string) *ec2.Instance {
 	input := &ec2.DescribeInstancesInput{
 		InstanceIds: []*string{
 			aws.String(instanceId),
 		},
 	}
-	result, err := Ec2Svc.DescribeInstances(input)
+	result, err := ec2svc.svc.DescribeInstances(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			log.Fatalln(aerr.Error())
@@ -75,19 +79,19 @@ func DescribeInstance(instanceId string) *ec2.Instance {
 }
 
 // TODO: return error when fail
-func StopInstance(instanceId string) {
+func (ec2svc *Ec2) StopInstance(instanceId string) {
 	input := &ec2.StopInstancesInput{
 		InstanceIds: []*string{
 			aws.String(instanceId),
 		},
 		DryRun: aws.Bool(true),
 	}
-	result, err := Ec2Svc.StopInstances(input)
+	result, err := ec2svc.svc.StopInstances(input)
 	awsErr, ok := err.(awserr.Error)
 
 	if ok && awsErr.Code() == "DryRunOperation" {
 		input.DryRun = aws.Bool(false)
-		result, err = Ec2Svc.StopInstances(input)
+		result, err = ec2svc.svc.StopInstances(input)
 		if err != nil {
 			log.Fatalln(err)
 		} else {
@@ -99,14 +103,14 @@ func StopInstance(instanceId string) {
 }
 
 // TODO: return error when fail
-func DescribeInstanceStatus(instanceId string) []*ec2.InstanceStatus {
+func (ec2svc *Ec2) DescribeInstanceStatus(instanceId string) []*ec2.InstanceStatus {
 	input := &ec2.DescribeInstanceStatusInput{
 		InstanceIds: []*string{
 			aws.String(instanceId),
 		},
 		IncludeAllInstances: aws.Bool(true),
 	}
-	result, err := Ec2Svc.DescribeInstanceStatus(input)
+	result, err := ec2svc.svc.DescribeInstanceStatus(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			log.Fatalln(aerr.Error())
@@ -122,8 +126,8 @@ func DescribeInstanceStatus(instanceId string) []*ec2.InstanceStatus {
 	return result.InstanceStatuses
 }
 
-func DescribeInstanceIPAddress(instanceId string) (string, error) {
-	instance := DescribeInstance(instanceId)
+func (ec2svc *Ec2) DescribeInstanceIPAddress(instanceId string) (string, error) {
+	instance := ec2svc.DescribeInstance(instanceId)
 	address_p := instance.PublicIpAddress
 	if address_p == nil {
 		return "", fmt.Errorf("No IP addresses. Is the instance running?")

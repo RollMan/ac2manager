@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/RollMan/ac2manager/ec2ctl/db"
+	"github.com/RollMan/ac2manager/ec2ctl/ec2"
 	"github.com/RollMan/ac2manager/ec2ctl/jobmng"
 	"github.com/go-gorp/gorp"
 	_ "github.com/go-sql-driver/mysql"
@@ -30,6 +31,7 @@ func main() {
 	}
 	queue := jobmng.InitQueue()
 	prev := time.Now()
+	ec2svc := ec2.InitAWS()
 	for {
 		var now time.Time
 		for {
@@ -62,7 +64,7 @@ func main() {
 				}
 			}
 		}
-		queue = jobmng.RunQueue(queue)
+		queue = jobmng.RunQueue(queue, ec2svc)
 	}
 }
 
