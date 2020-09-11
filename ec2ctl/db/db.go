@@ -3,25 +3,25 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"github.com/RollMan/ac2manager/app/models"
 	"github.com/go-gorp/gorp"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"time"
-	"github.com/RollMan/ac2manager/app/models"
 )
 
-var Db *sql.DB
-var DbMap *gorp.DbMap
+func InitDB(dsn string) (*sql.DB, *gorp.DbMap) {
+	var db *sql.DB
+	var dbMap *gorp.DbMap
 
-func InitDB(dsn string) {
 	var err error
-	Db, err = sql.Open("mysql", dsn)
+	db, err = sql.Open("mysql", dsn)
 	if err != nil {
 		fmt.Println("DB Opening Error.")
 		log.Fatal(err)
 	}
 	for {
-		err = Db.Ping()
+		err = db.Ping()
 		if err != nil {
 			fmt.Println("DB Ping Error. Retrying...")
 			log.Println(err)
@@ -30,6 +30,7 @@ func InitDB(dsn string) {
 		}
 		break
 	}
-	DbMap = &gorp.DbMap{Db: Db, Dialect: gorp.MySQLDialect{}}
-  DbMap.AddTableWithName(models.Event{}, "events").SetKeys(true, "id")
+	dbMap = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{}}
+	dbMap.AddTableWithName(models.Event{}, "events").SetKeys(true, "id")
+	return db, dbMap
 }

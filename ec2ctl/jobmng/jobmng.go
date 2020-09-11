@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"github.com/RollMan/ac2manager/app/models"
 	"github.com/RollMan/ac2manager/ec2ctl/confjson"
-	"github.com/RollMan/ac2manager/ec2ctl/db"
+	_ "github.com/RollMan/ac2manager/ec2ctl/db"
 	"github.com/RollMan/ac2manager/ec2ctl/ec2"
+	"github.com/go-gorp/gorp"
+	_ "github.com/go-sql-driver/mysql"
 	"io/ioutil"
 	"log"
 	"os"
@@ -32,28 +34,29 @@ type ruleFile struct {
 	filename string
 }
 
-var queue []jobQueue
-
-func InitQueue() {
+func InitQueue() []jobQueue {
+	var queue []jobQueue
 	queue = make([]jobQueue, 0)
+	return queue
 }
 
-func FindJobs(t time.Time) {
+func FindJobs(t time.Time, queue []jobQueue, dbMap *gorp.DbMap) []jobQueue {
 	targetInMinute := t.Truncate(time.Minute)
-	events := selectJobsByDate(targetInMinute)
+	events := selectJobsByDate(targetInMinute, dbMap)
 	for _, e := range events {
 		queue = append(queue, jobQueue{Start, e, e.Startdate})
 		extra := time.Minute * 10
 		enddate := e.Startdate.Add(time.Minute*time.Duration(e.P_sessionDurationMinute+e.Q_sessionDurationMinute+e.R_sessionDurationMinute) + extra)
 		queue = append(queue, jobQueue{Stop, e, enddate})
 	}
+	return queue
 }
 
-func selectJobsByDate(t time.Time) []models.Event {
+func selectJobsByDate(t time.Time, dbMap *gorp.DbMap) []models.Event {
 	var events []models.Event
 	t1 := t
 	t2 := t.Add(time.Minute)
-	_, err := db.DbMap.Select(&events, "SELECT * FROM events WHERE CONVERT(?, DATETIME) <= events.startdate and events.startdate < CONVERT(?, DATETIME)", t1, t2)
+	_, err := dbMap.Select(&events, "SELECT * FROM events WHERE CONVERT(?, DATETIME) <= events.startdate and events.startdate < CONVERT(?, DATETIME)", t1, t2)
 
 	if err != nil {
 		log.Fatal(err)
@@ -61,12 +64,13 @@ func selectJobsByDate(t time.Time) []models.Event {
 	return events
 }
 
-func RunQueue() {
+func RunQueue(queue []jobQueue) []jobQueue {
 	virtualQueue := make([]jobQueue, len(queue))
 	copy(virtualQueue, queue)
 	queue = make([]jobQueue, 0)
 
 	go RunInstanse(virtualQueue)
+	return queue
 }
 
 func RunInstanse(virtualQueue []jobQueue) error {

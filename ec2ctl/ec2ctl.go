@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/RollMan/ac2manager/ec2ctl/db"
 	"github.com/RollMan/ac2manager/ec2ctl/jobmng"
+	"github.com/go-gorp/gorp"
+	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"os"
 	"time"
@@ -20,11 +22,13 @@ const (
 func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
 	time.Local = time.FixedZone("GMT", 0)
+
+	var dbMap *gorp.DbMap
 	{
 		dsn := fmt.Sprintf("%s:%s@tcp(db:3306)/ac2?charset=utf8&parseTime=true", os.Getenv("AC2_DB_USERNAME"), os.Getenv("MYSQL_ROOT_PASSWORD"))
-		db.InitDB(dsn)
+		_, dbMap = db.InitDB(dsn)
 	}
-	jobmng.InitQueue()
+	queue := jobmng.InitQueue()
 	prev := time.Now()
 	for {
 		var now time.Time
@@ -45,20 +49,20 @@ func main() {
 
 		if timeDiffMinute == 1 {
 			prev = now
-			jobmng.FindJobs(prev)
+			queue = jobmng.FindJobs(prev, queue, dbMap)
 		} else {
 			now_unixminute := int(now.Unix() / 60)
 
 			for {
 				prev = prev.Add(time.Minute)
-				jobmng.FindJobs(prev)
+				queue = jobmng.FindJobs(prev, queue, dbMap)
 				prev_unixminute := int(prev.Unix() / 60)
 				if !(prev_unixminute < now_unixminute) {
 					break
 				}
 			}
 		}
-		jobmng.RunQueue()
+		queue = jobmng.RunQueue(queue)
 	}
 }
 
