@@ -2,9 +2,45 @@ package ec2
 
 import (
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"testing"
-	"time"
 )
+
+type mockedInstance struct {
+	ec2iface.EC2API
+	Resp ec2.StartInstancesOutput
+}
+
+func (m mockedInstance) StartInstances(*ec2.StartInstancesInput) (*ec2.StartInstancesOutput, error) {
+	// TODO: FIXME: return error when dry run
+	return &m.Resp, nil
+}
+
+func TestStartInstance(t *testing.T) {
+	cases := []struct {
+		Resp     ec2.StartInstancesOutput
+		Expected []ec2.InstanceState
+	}{
+		{
+			Resp: ec2.StartInstancesOutput{
+				StartingInstances: []*ec2.InstanceStateChange{
+					{
+						CurrentState: &ec2.InstanceState{
+							Code: &(&struct{ x int64 }{16}).x,
+							Name: &(&struct{ s string }{ec2.InstanceStateNameRunning}).s,
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, c := range cases {
+		ec2svc := Ec2{
+			svc: mockedInstance{Resp: c.Resp},
+		}
+		ec2svc.StartInstance("dummyinstanceid")
+	}
+}
 
 /* Danger test due to billing occuring
 func TestStartInstance(t *testing.T) {

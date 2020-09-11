@@ -6,11 +6,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"log"
 )
 
 type Ec2 struct {
-	svc *ec2.EC2
+	svc ec2iface.EC2API
 }
 
 func InitAWS() Ec2 {
