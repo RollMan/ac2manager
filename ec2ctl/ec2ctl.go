@@ -31,6 +31,7 @@ func main() {
 	}
 	queue := jobmng.InitQueue()
 	ec2svc := ec2.InitAWS()
+	// TODO: graceful shutdown when SIGINT
 	cron(dbMap, queue, ec2svc)
 }
 
