@@ -30,8 +30,12 @@ func main() {
 		_, dbMap = db.InitDB(dsn)
 	}
 	queue := jobmng.InitQueue()
-	prev := time.Now()
 	ec2svc := ec2.InitAWS()
+	cron(dbMap, queue, ec2svc)
+}
+
+func cron(dbMap *gorp.DbMap, queue []jobmng.JobQueue, ec2svc ec2.Ec2) {
+	prev := time.Now()
 	for {
 		var now time.Time
 		for {

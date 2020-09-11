@@ -23,7 +23,7 @@ const (
 	Stop
 )
 
-type jobQueue struct {
+type JobQueue struct {
 	JobType        JobType
 	Event          models.Event
 	LaunchSchedule time.Time
@@ -34,20 +34,20 @@ type ruleFile struct {
 	filename string
 }
 
-func InitQueue() []jobQueue {
-	var queue []jobQueue
-	queue = make([]jobQueue, 0)
+func InitQueue() []JobQueue {
+	var queue []JobQueue
+	queue = make([]JobQueue, 0)
 	return queue
 }
 
-func FindJobs(t time.Time, queue []jobQueue, dbMap *gorp.DbMap) []jobQueue {
+func FindJobs(t time.Time, queue []JobQueue, dbMap *gorp.DbMap) []JobQueue {
 	targetInMinute := t.Truncate(time.Minute)
 	events := selectJobsByDate(targetInMinute, dbMap)
 	for _, e := range events {
-		queue = append(queue, jobQueue{Start, e, e.Startdate})
+		queue = append(queue, JobQueue{Start, e, e.Startdate})
 		extra := time.Minute * 10
 		enddate := e.Startdate.Add(time.Minute*time.Duration(e.P_sessionDurationMinute+e.Q_sessionDurationMinute+e.R_sessionDurationMinute) + extra)
-		queue = append(queue, jobQueue{Stop, e, enddate})
+		queue = append(queue, JobQueue{Stop, e, enddate})
 	}
 	return queue
 }
@@ -64,16 +64,16 @@ func selectJobsByDate(t time.Time, dbMap *gorp.DbMap) []models.Event {
 	return events
 }
 
-func RunQueue(queue []jobQueue, ec2svc ec2.Ec2) []jobQueue {
-	virtualQueue := make([]jobQueue, len(queue))
+func RunQueue(queue []JobQueue, ec2svc ec2.Ec2) []JobQueue {
+	virtualQueue := make([]JobQueue, len(queue))
 	copy(virtualQueue, queue)
-	queue = make([]jobQueue, 0)
+	queue = make([]JobQueue, 0)
 
 	go RunInstanse(virtualQueue, ec2svc)
 	return queue
 }
 
-func RunInstanse(virtualQueue []jobQueue, ec2svc ec2.Ec2) error {
+func RunInstanse(virtualQueue []JobQueue, ec2svc ec2.Ec2) error {
 	for _, q := range virtualQueue {
 		// Select instance to deploy
 		// FIXME: create instance from an AMI and to select an available instance.
