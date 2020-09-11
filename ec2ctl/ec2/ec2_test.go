@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+/* Danger test due to billing occuring
 func TestStartInstance(t *testing.T) {
 	const instanceId = "i-0fbc76811e301234a"
 	InitAWS()
@@ -30,3 +31,4 @@ func TestStartInstance(t *testing.T) {
 		}
 	}
 }
+*/
