@@ -26,6 +26,7 @@ func main() {
 	}
 	jobmng.InitQueue()
 	prev := time.Now()
+	// TODO: graceful shutdown when SIGINT
 	for {
 		var now time.Time
 		for {
