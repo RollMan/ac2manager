@@ -54,7 +54,9 @@ func TestFindJobs(t *testing.T) {
 	dbMap.AddTableWithName(models.Event{}, "events").SetKeys(true, "id")
 	defer dbMap.Db.Close()
 
-	empty_rows := sqlmock.NewRows([]string{"id", "startdate"})
+	emptyRows := func() *sqlmock.Rows {
+		return sqlmock.NewRows([]string{"id", "startdate"})
+	}
 
 	time1 := time.Date(2020, 5, 3, 23, 0, 0, 0, time.UTC)
 	time2 := time.Date(2020, 5, 5, 11, 30, 0, 0, time.UTC)
@@ -67,21 +69,45 @@ func TestFindJobs(t *testing.T) {
 	}{
 		{
 			description: "Test when current time matches an event",
-			rows:        empty_rows.AddRow(3, time1),
+			rows:        emptyRows().AddRow(3, time1),
 			time:        time1,
-			expected:    []JobQueue{{JobType: Start, Event: models.Event{Id: 3, Startdate: time1}}},
+			expected: []JobQueue{
+				{
+					JobType: Start,
+					Event:   models.Event{Id: 3, Startdate: time1},
+				},
+				{
+					JobType: Stop,
+					Event:   models.Event{Id: 3, Startdate: time1.Add(time.Minute * 10)}, // Assume that non-initialized time.Time is 0.
+				},
+			},
 		},
 		{
 			description: "Test when current time matches plural events",
-			rows:        empty_rows.AddRow(0, time1).AddRow(5, time1),
+			rows:        emptyRows().AddRow(0, time1).AddRow(5, time1),
 			time:        time1,
-			expected:    []JobQueue{{JobType: Start, Event: models.Event{Id: 0, Startdate: time1}}, {JobType: Start, Event: models.Event{Id: 5, Startdate: time1}}},
+			expected: []JobQueue{
+				{
+					JobType: Start,
+					Event:   models.Event{Id: 0, Startdate: time1},
+				},
+				{
+					JobType: Stop,
+					Event:   models.Event{Id: 0, Startdate: time1.Add(time.Minute * 10)},
+				},
+				{
+					JobType: Start, Event: models.Event{Id: 5, Startdate: time1},
+				},
+				{
+					JobType: Stop, Event: models.Event{Id: 5, Startdate: time1.Add(time.Minute * 10)},
+				},
+			},
 		},
 		{
 			description: "Test when current time does not maches any events",
-			rows:        empty_rows.AddRow(0, time1),
+			rows:        emptyRows(),
 			time:        time2,
-			expected:    []JobQueue{{}},
+			expected:    []JobQueue{},
 		},
 	}
 

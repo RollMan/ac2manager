@@ -24,9 +24,8 @@ const (
 )
 
 type JobQueue struct {
-	JobType        JobType
-	Event          models.Event
-	LaunchSchedule time.Time
+	JobType JobType
+	Event   models.Event
 }
 
 type ruleFile struct {
@@ -44,10 +43,12 @@ func FindJobs(t time.Time, queue []JobQueue, dbMap *gorp.DbMap) []JobQueue {
 	targetInMinute := t.Truncate(time.Minute)
 	events := selectJobsByDate(targetInMinute, dbMap)
 	for _, e := range events {
-		queue = append(queue, JobQueue{Start, e, e.Startdate})
+		queue = append(queue, JobQueue{Start, e})
 		extra := time.Minute * 10
 		enddate := e.Startdate.Add(time.Minute*time.Duration(e.P_sessionDurationMinute+e.Q_sessionDurationMinute+e.R_sessionDurationMinute) + extra)
-		queue = append(queue, JobQueue{Stop, e, enddate})
+		end_e := e
+		end_e.Startdate = enddate
+		queue = append(queue, JobQueue{Stop, end_e})
 	}
 	return queue
 }

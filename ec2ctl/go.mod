@@ -3,6 +3,7 @@ module github.com/RollMan/ac2manager/ec2ctl
 go 1.14
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/RollMan/ac2manager/app v0.0.0-20200808055404-043583978010
 	github.com/aws/aws-sdk-go v1.34.9
 	github.com/go-gorp/gorp v2.2.0+incompatible
