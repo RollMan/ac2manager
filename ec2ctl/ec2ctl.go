@@ -29,13 +29,19 @@ func main() {
 		dsn := fmt.Sprintf("%s:%s@tcp(db:3306)/ac2?charset=utf8&parseTime=true", os.Getenv("AC2_DB_USERNAME"), os.Getenv("MYSQL_ROOT_PASSWORD"))
 		_, dbMap = db.InitDB(dsn)
 	}
-	queue := jobmng.InitQueue()
-	ec2svc := ec2.InitAWS()
+
+	var jobmnger = jobmng.Jobmnger{
+		Queue:  jobmng.InitQueue(),
+		DbMap:  dbMap,
+		Ec2svc: ec2.InitAWS(),
+	}
+	fmt.Println(jobmnger)
 	// TODO: graceful shutdown when SIGINT
-	cron(dbMap, queue, ec2svc)
+	// cron(dbMap, queue, ec2svc, jobmnger)
 }
 
-func cron(dbMap *gorp.DbMap, queue []jobmng.JobQueue, ec2svc ec2.Ec2) {
+/*
+func cron(dbMap *gorp.DbMap, queue []jobmng.JobQueue, ec2svc ec2.Ec2, jobmnger *jobmng.Jobmng) {
 	prev := time.Now()
 	for {
 		var now time.Time
@@ -56,20 +62,20 @@ func cron(dbMap *gorp.DbMap, queue []jobmng.JobQueue, ec2svc ec2.Ec2) {
 
 		if timeDiffMinute == 1 {
 			prev = now
-			queue = jobmng.FindJobs(prev, queue, dbMap)
+			queue = jobmnger.FindJobs(prev, queue, dbMap)
 		} else {
 			now_unixminute := int(now.Unix() / 60)
 
 			for {
 				prev = prev.Add(time.Minute)
-				queue = jobmng.FindJobs(prev, queue, dbMap)
+				queue = jobmnger.FindJobs(prev, queue, dbMap)
 				prev_unixminute := int(prev.Unix() / 60)
 				if !(prev_unixminute < now_unixminute) {
 					break
 				}
 			}
 		}
-		queue = jobmng.RunQueue(queue, ec2svc)
+		queue = jobmnger.RunQueue(queue, ec2svc)
 	}
 }
 
@@ -83,3 +89,4 @@ func sleepUntilNextMinute(target time.Time) {
 		t1 = t2
 	}
 }
+*/

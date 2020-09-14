@@ -11,6 +11,9 @@ build: $(SRC)
 		echo "Docker container image is ready up to date."; \
 	fi
 
+build-vol: $(SRC)
+	docker run --rm -it ec2ctl go build $(PKG)
+
 test: build
 	docker run --env-file ../.env --rm -it ec2ctl go test $(PKG)
 

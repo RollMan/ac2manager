@@ -6,6 +6,10 @@ import (
 	"github.com/go-gorp/gorp"
 	"testing"
 	"time"
+	_ "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 )
 
 func TestSelectJobsByDate(t *testing.T) {
@@ -128,4 +132,41 @@ func TestFindJobs(t *testing.T) {
 			}
 		}
 	}
+}
+
+type mockedInstanceForTestRunInstance struct {
+  ec2iface.EC2API
+  Resp ec2.StartInstancesOutput
+}
+
+func (m *mockedInstanceForTestRunInstance) StartInstance(i *ec2.StartInstancesInput) (*ec2.StartInstancesOutput, error) {
+	if *i.DryRun == true {
+		return nil, awserr.New("DryRunOperation", "", nil)
+	}
+	return &m.Resp, nil
+}
+
+func (m *mockedInstanceForTestRunInstance) StopInstance(i *ec2.StopInstancesInput) (*ec2.StopInstancesOutput, error) {
+	if *i.DryRun == true {
+		return nil, awserr.New("DryRunOperation", "", nil)
+	}
+	return &m.Resp, nil
+}
+
+type startStopOutput interface {
+  Match(case)
+}
+
+func TestRunInstance(t *testing.T){
+  cases := []struct {
+    description string
+    virtualQueue []JobQueue
+    Resp interface{}
+  }{
+    {
+      description: "No queue",
+      virtualQueue: []JobQueue{},
+      Resp: nil
+    },
+  }
 }

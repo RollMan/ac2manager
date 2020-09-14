@@ -33,31 +33,43 @@ type ruleFile struct {
 	filename string
 }
 
+type JobmngerAPI interface {
+	FindJobs(t time.Time)
+	RunQueue()
+	RunInstanse(virtualQueue []JobQueue) error
+	selectJobsByDate(time.Time) []models.Event
+}
+
+type Jobmnger struct {
+	Queue  []JobQueue
+	DbMap  *gorp.DbMap
+	Ec2svc ec2.Ec2
+}
+
 func InitQueue() []JobQueue {
 	var queue []JobQueue
 	queue = make([]JobQueue, 0)
 	return queue
 }
 
-func FindJobs(t time.Time, queue []JobQueue, dbMap *gorp.DbMap) []JobQueue {
+func (j *Jobmnger) FindJobs(t time.Time) {
 	targetInMinute := t.Truncate(time.Minute)
-	events := selectJobsByDate(targetInMinute, dbMap)
+	events := j.selectJobsByDate(targetInMinute)
 	for _, e := range events {
-		queue = append(queue, JobQueue{Start, e})
+		j.Queue = append(j.Queue, JobQueue{Start, e})
 		extra := time.Minute * 10
 		enddate := e.Startdate.Add(time.Minute*time.Duration(e.P_sessionDurationMinute+e.Q_sessionDurationMinute+e.R_sessionDurationMinute) + extra)
 		end_e := e
 		end_e.Startdate = enddate
-		queue = append(queue, JobQueue{Stop, end_e})
+		j.Queue = append(j.Queue, JobQueue{Stop, end_e})
 	}
-	return queue
 }
 
-func selectJobsByDate(t time.Time, dbMap *gorp.DbMap) []models.Event {
+func (j *Jobmnger) selectJobsByDate(t time.Time) []models.Event {
 	var events []models.Event
 	t1 := t
 	t2 := t.Add(time.Minute)
-	_, err := dbMap.Select(&events, "SELECT * FROM events WHERE CONVERT(?, DATETIME) <= events.startdate and events.startdate < CONVERT(?, DATETIME)", t1, t2)
+	_, err := j.DbMap.Select(&events, "SELECT * FROM events WHERE CONVERT(?, DATETIME) <= events.startdate and events.startdate < CONVERT(?, DATETIME)", t1, t2)
 
 	if err != nil {
 		log.Fatal(err)
@@ -65,22 +77,21 @@ func selectJobsByDate(t time.Time, dbMap *gorp.DbMap) []models.Event {
 	return events
 }
 
-func RunQueue(queue []JobQueue, ec2svc ec2.Ec2) []JobQueue {
-	virtualQueue := make([]JobQueue, len(queue))
-	copy(virtualQueue, queue)
-	queue = make([]JobQueue, 0)
+func (j *Jobmnger) RunQueue() {
+	virtualQueue := make([]JobQueue, len(j.Queue))
+	copy(virtualQueue, j.Queue)
+	j.Queue = make([]JobQueue, 0)
 
-	go RunInstanse(virtualQueue, ec2svc)
-	return queue
+	go j.RunInstanse(virtualQueue)
 }
 
-func RunInstanse(virtualQueue []JobQueue, ec2svc ec2.Ec2) error {
+func (j *Jobmnger) RunInstanse(virtualQueue []JobQueue) error {
 	for _, q := range virtualQueue {
 		// Select instance to deploy
 		// FIXME: create instance from an AMI and to select an available instance.
 		id := ""
 		if q.JobType == Stop {
-			ec2svc.StopInstance(id)
+			j.Ec2svc.StopInstance(id)
 		} else if q.JobType == Start {
 			assistRules, settings, event, configuration, eventRules := confjson.ReadDefaultConfigs()
 			confjson.SetConfigs(q.Event, assistRules, settings, event, configuration, eventRules)
@@ -88,7 +99,7 @@ func RunInstanse(virtualQueue []JobQueue, ec2svc ec2.Ec2) error {
 			conf_dir_path := "/opt/ac2manager/" + id
 			err := os.MkdirAll(conf_dir_path, 0777)
 			if err != nil {
-				ec2svc.StopInstance(id)
+				j.Ec2svc.StopInstance(id)
 				return fmt.Errorf("Failed to create directory: %s", conf_dir_path)
 			}
 
@@ -112,8 +123,10 @@ func RunInstanse(virtualQueue []JobQueue, ec2svc ec2.Ec2) error {
 				}
 			}
 
-			ec2svc.StartInstance(id)
+			j.Ec2svc.StartInstance(id)
 		}
 	}
 	return nil
 }
+
+var _ JobmngerAPI = &Jobmnger{}
