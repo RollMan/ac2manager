@@ -37,11 +37,10 @@ func main() {
 	}
 	fmt.Println(jobmnger)
 	// TODO: graceful shutdown when SIGINT
-	// cron(dbMap, queue, ec2svc, jobmnger)
+	cron(jobmnger)
 }
 
-/*
-func cron(dbMap *gorp.DbMap, queue []jobmng.JobQueue, ec2svc ec2.Ec2, jobmnger *jobmng.Jobmng) {
+func cron(jobmnger jobmng.Jobmnger) {
 	prev := time.Now()
 	for {
 		var now time.Time
@@ -62,20 +61,20 @@ func cron(dbMap *gorp.DbMap, queue []jobmng.JobQueue, ec2svc ec2.Ec2, jobmnger *
 
 		if timeDiffMinute == 1 {
 			prev = now
-			queue = jobmnger.FindJobs(prev, queue, dbMap)
+			jobmnger.FindJobs(prev)
 		} else {
 			now_unixminute := int(now.Unix() / 60)
 
 			for {
 				prev = prev.Add(time.Minute)
-				queue = jobmnger.FindJobs(prev, queue, dbMap)
+				jobmnger.FindJobs(prev)
 				prev_unixminute := int(prev.Unix() / 60)
 				if !(prev_unixminute < now_unixminute) {
 					break
 				}
 			}
 		}
-		queue = jobmnger.RunQueue(queue, ec2svc)
+		jobmnger.RunQueue()
 	}
 }
 
@@ -89,4 +88,3 @@ func sleepUntilNextMinute(target time.Time) {
 		t1 = t2
 	}
 }
-*/
