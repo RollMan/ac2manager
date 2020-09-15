@@ -2,6 +2,13 @@ package confjson
 
 import (
 	"github.com/RollMan/ac2manager/app/models"
+	"path/filepath"
+	"runtime"
+)
+
+var (
+	_, sourcefilepath, _, _ = runtime.Caller(0)
+	sourcedirpath           = filepath.Dir(sourcefilepath)
 )
 
 func ReadDefaultConfigs() (*AssistRules, *Settings, *Event, *Configuration, *EventRules) {
@@ -11,11 +18,14 @@ func ReadDefaultConfigs() (*AssistRules, *Settings, *Event, *Configuration, *Eve
 	var configuration *Configuration = &Configuration{}
 	var eventRules *EventRules = &EventRules{}
 
-	assistRules.ParseConfig("assistRules.json")
-	settings.ParseConfig("settings.json")
-	event.ParseConfig("event.json")
-	configuration.ParseConfig("configuration.json")
-	eventRules.ParseConfig("eventRules.json")
+	// FIXME: specify these paths through command line arguments
+	// and set default path if no arguments are passed.
+	prefix := sourcedirpath
+	assistRules.ParseConfig(prefix + "/" + "assistRules.json")
+	settings.ParseConfig(prefix + "/" + "settings.json")
+	event.ParseConfig(prefix + "/" + "event.json")
+	configuration.ParseConfig(prefix + "/" + "configuration.json")
+	eventRules.ParseConfig(prefix + "/" + "eventRules.json")
 
 	return assistRules, settings, event, configuration, eventRules
 }

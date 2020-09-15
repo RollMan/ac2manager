@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/go-gorp/gorp"
+	"os"
 	"testing"
 	"time"
 )
@@ -64,12 +65,6 @@ func TestFindJobs(t *testing.T) {
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{}}
 	dbMap.AddTableWithName(models.Event{}, "events").SetKeys(true, "id")
 	defer dbMap.Db.Close()
-
-	jobmnger := Jobmnger{
-		Queue:  InitQueue(),
-		DbMap:  dbMap,
-		Ec2svc: ec2svc.Ec2{},
-	}
 
 	emptyRows := func() *sqlmock.Rows {
 		return sqlmock.NewRows([]string{"id", "startdate"})
@@ -129,6 +124,12 @@ func TestFindJobs(t *testing.T) {
 	}
 
 	for _, c := range cases {
+		jobmnger := Jobmnger{
+			Queue:  InitQueue(),
+			DbMap:  dbMap,
+			Ec2svc: ec2svc.Ec2{},
+		}
+
 		mock.ExpectQuery(`SELECT \* FROM events`).
 			WithArgs(c.time, c.time.Add(time.Minute)).
 			WillReturnRows(c.rows)
@@ -167,6 +168,32 @@ func (m *mockedInstanceForTestRunInstance) StopInstance(i *ec2.StopInstancesInpu
 		return nil, awserr.New("DryRunOperation", "", nil)
 	}
 	return &m.RespStop, nil
+}
+
+type mockedDstJson struct {
+	name   string
+	flag   int
+	perm   os.FileMode
+	file   []byte
+	opened bool
+}
+
+func (m *mockedDstJson) OpenFile(name string, flag int, perm os.FileMode) error {
+	m.name = name
+	m.flag = flag
+	m.perm = perm
+	m.opened = true
+	return nil
+}
+
+func (m *mockedDstJson) Write(p []byte) (int, error) {
+	m.file = p
+	return len(p), nil
+}
+
+func (m *mockedDstJson) Close() error {
+	m.opened = false
+	return nil
 }
 
 func TestRunInstance(t *testing.T) {
@@ -245,6 +272,7 @@ func TestRunInstance(t *testing.T) {
 					RespStop:  c.RespStop,
 				},
 			},
+			DstJsonFile: &mockedDstJson{},
 		}
 
 		err := jobmnger.RunInstanse(c.virtualQueue)
