@@ -3,13 +3,14 @@ package jobmng
 import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/RollMan/ac2manager/app/models"
-	"github.com/go-gorp/gorp"
-	"testing"
-	"time"
+	ec2svc "github.com/RollMan/ac2manager/ec2ctl/ec2"
 	_ "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/go-gorp/gorp"
+	"testing"
+	"time"
 )
 
 func TestSelectJobsByDate(t *testing.T) {
@@ -22,6 +23,12 @@ func TestSelectJobsByDate(t *testing.T) {
 	dbMap.AddTableWithName(models.Event{}, "events").SetKeys(true, "id")
 	defer dbMap.Db.Close()
 
+	jobmnger := Jobmnger{
+		Queue:  nil,
+		DbMap:  dbMap,
+		Ec2svc: ec2svc.Ec2{},
+	}
+
 	target_time := time.Date(2020, 9, 12, 10, 30, 0, 0, time.UTC)
 	target_Time2 := target_time.Add(time.Minute)
 	{
@@ -31,7 +38,7 @@ func TestSelectJobsByDate(t *testing.T) {
 			WithArgs(target_time, target_Time2).
 			WillReturnRows(row)
 
-		events := selectJobsByDate(target_time, dbMap)
+		events := jobmnger.selectJobsByDate(target_time)
 		if events[0] != expected {
 			t.Errorf("invalid result")
 		}
@@ -42,7 +49,7 @@ func TestSelectJobsByDate(t *testing.T) {
 			WithArgs(target_time, target_Time2).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "startdate"}))
 
-		events := selectJobsByDate(target_time, dbMap)
+		events := jobmnger.selectJobsByDate(target_time)
 		if len(events) != 0 {
 			t.Errorf("invalid result")
 		}
@@ -57,6 +64,12 @@ func TestFindJobs(t *testing.T) {
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{}}
 	dbMap.AddTableWithName(models.Event{}, "events").SetKeys(true, "id")
 	defer dbMap.Db.Close()
+
+	jobmnger := Jobmnger{
+		Queue:  InitQueue(),
+		DbMap:  dbMap,
+		Ec2svc: ec2svc.Ec2{},
+	}
 
 	emptyRows := func() *sqlmock.Rows {
 		return sqlmock.NewRows([]string{"id", "startdate"})
@@ -120,7 +133,9 @@ func TestFindJobs(t *testing.T) {
 			WithArgs(c.time, c.time.Add(time.Minute)).
 			WillReturnRows(c.rows)
 
-		res := FindJobs(c.time, []JobQueue{}, dbMap)
+		jobmnger.FindJobs(c.time)
+
+		res := jobmnger.Queue
 
 		if len(res) != len(c.expected) {
 			t.Errorf("Error in a test.\ntestcase description: %s\nThe number of result %d must %d but not.\nres:%v\nexpected:%v\n", c.description, len(res), len(c.expected), res, c.expected)
@@ -135,38 +150,107 @@ func TestFindJobs(t *testing.T) {
 }
 
 type mockedInstanceForTestRunInstance struct {
-  ec2iface.EC2API
-  Resp ec2.StartInstancesOutput
+	ec2iface.EC2API
+	RespStart ec2.StartInstancesOutput
+	RespStop  ec2.StopInstancesOutput
 }
 
 func (m *mockedInstanceForTestRunInstance) StartInstance(i *ec2.StartInstancesInput) (*ec2.StartInstancesOutput, error) {
 	if *i.DryRun == true {
 		return nil, awserr.New("DryRunOperation", "", nil)
 	}
-	return &m.Resp, nil
+	return &m.RespStart, nil
 }
 
 func (m *mockedInstanceForTestRunInstance) StopInstance(i *ec2.StopInstancesInput) (*ec2.StopInstancesOutput, error) {
 	if *i.DryRun == true {
 		return nil, awserr.New("DryRunOperation", "", nil)
 	}
-	return &m.Resp, nil
+	return &m.RespStop, nil
 }
 
-type startStopOutput interface {
-  Match(case)
-}
+func TestRunInstance(t *testing.T) {
 
-func TestRunInstance(t *testing.T){
-  cases := []struct {
-    description string
-    virtualQueue []JobQueue
-    Resp interface{}
-  }{
-    {
-      description: "No queue",
-      virtualQueue: []JobQueue{},
-      Resp: nil
-    },
-  }
+	type Case struct {
+		description  string
+		virtualQueue []JobQueue
+		RespStart    ec2.StartInstancesOutput
+		RespStop     ec2.StopInstancesOutput
+	}
+	time1 := time.Date(2020, 5, 3, 23, 0, 0, 0, time.UTC)
+	// time2 := time.Date(2020, 5, 5, 11, 30, 0, 0, time.UTC)
+
+	cases := []Case{
+		{
+			description:  "No queue 1",
+			virtualQueue: []JobQueue{},
+			RespStart:    ec2.StartInstancesOutput{},
+			RespStop:     ec2.StopInstancesOutput{},
+		},
+		{
+			description: "Start",
+			virtualQueue: []JobQueue{
+				{
+					JobType: Start,
+					Event: models.Event{
+						Id:        0,
+						Startdate: time1,
+					},
+				},
+			},
+			RespStart: ec2.StartInstancesOutput{
+				StartingInstances: []*ec2.InstanceStateChange{
+					{
+						CurrentState: &ec2.InstanceState{
+							Code: &(&struct{ x int64 }{16}).x,
+							Name: &(&struct{ s string }{ec2.InstanceStateNameRunning}).s,
+						},
+					},
+				},
+			},
+			RespStop: ec2.StopInstancesOutput{},
+		},
+		{
+			description: "Stop",
+			virtualQueue: []JobQueue{
+				{
+					JobType: Stop,
+					Event: models.Event{
+						Id:        45,
+						Startdate: time1,
+					},
+				},
+			},
+			RespStart: ec2.StartInstancesOutput{},
+			RespStop: ec2.StopInstancesOutput{
+				StoppingInstances: []*ec2.InstanceStateChange{
+					{
+						CurrentState: &ec2.InstanceState{
+							Code: &(&struct{ x int64 }{16}).x,
+							Name: &(&struct{ s string }{ec2.InstanceStateNameRunning}).s,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, c := range cases {
+		jobmnger := Jobmnger{
+			Queue: InitQueue(),
+			DbMap: nil,
+			Ec2svc: ec2svc.Ec2{
+				Svc: mockedInstanceForTestRunInstance{
+					RespStart: c.RespStart,
+					RespStop:  c.RespStop,
+				},
+			},
+		}
+
+		err := jobmnger.RunInstanse(c.virtualQueue)
+
+		if err != nil {
+			t.Errorf("Error in test %s: %v\n", c.description, err)
+		}
+	}
 }

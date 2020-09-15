@@ -17,6 +17,9 @@ build-vol: $(SRC)
 test: build
 	docker run --env-file ../.env --rm -it ec2ctl go test $(PKG)
 
+test-build:
+	docker run -v$(PWD):$(GOPATH) --rm -it ec2ctl go test -c $(PKG)
+
 test-vol:
 	docker run -v$(PWD):$(GOPATH) --rm -it ec2ctl go test $(PKG)
 

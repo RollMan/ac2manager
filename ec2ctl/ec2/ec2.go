@@ -11,7 +11,7 @@ import (
 )
 
 type Ec2 struct {
-	svc ec2iface.EC2API
+	Svc ec2iface.EC2API
 }
 
 func InitAWS() Ec2 {
@@ -20,9 +20,9 @@ func InitAWS() Ec2 {
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 
-	svc := ec2.New(sess)
+	Svc := ec2.New(sess)
 
-	ec2svc := Ec2{svc}
+	ec2svc := Ec2{Svc}
 	return ec2svc
 }
 
@@ -34,12 +34,12 @@ func (ec2svc *Ec2) StartInstance(instanceId string) {
 		},
 		DryRun: aws.Bool(true),
 	}
-	result, err := ec2svc.svc.StartInstances(input)
+	result, err := ec2svc.Svc.StartInstances(input)
 	awsErr, ok := err.(awserr.Error)
 
 	if ok && awsErr.Code() == "DryRunOperation" {
 		input.DryRun = aws.Bool(false)
-		result, err = ec2svc.svc.StartInstances(input)
+		result, err = ec2svc.Svc.StartInstances(input)
 		if err != nil {
 			log.Fatalln(err)
 		} else {
@@ -57,7 +57,7 @@ func (ec2svc *Ec2) DescribeInstance(instanceId string) *ec2.Instance {
 			aws.String(instanceId),
 		},
 	}
-	result, err := ec2svc.svc.DescribeInstances(input)
+	result, err := ec2svc.Svc.DescribeInstances(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			log.Fatalln(aerr.Error())
@@ -87,12 +87,12 @@ func (ec2svc *Ec2) StopInstance(instanceId string) {
 		},
 		DryRun: aws.Bool(true),
 	}
-	result, err := ec2svc.svc.StopInstances(input)
+	result, err := ec2svc.Svc.StopInstances(input)
 	awsErr, ok := err.(awserr.Error)
 
 	if ok && awsErr.Code() == "DryRunOperation" {
 		input.DryRun = aws.Bool(false)
-		result, err = ec2svc.svc.StopInstances(input)
+		result, err = ec2svc.Svc.StopInstances(input)
 		if err != nil {
 			log.Fatalln(err)
 		} else {
@@ -111,7 +111,7 @@ func (ec2svc *Ec2) DescribeInstanceStatus(instanceId string) []*ec2.InstanceStat
 		},
 		IncludeAllInstances: aws.Bool(true),
 	}
-	result, err := ec2svc.svc.DescribeInstanceStatus(input)
+	result, err := ec2svc.Svc.DescribeInstanceStatus(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			log.Fatalln(aerr.Error())
