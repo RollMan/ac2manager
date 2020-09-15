@@ -31,9 +31,10 @@ func main() {
 	}
 
 	var jobmnger = jobmng.Jobmnger{
-		Queue:  jobmng.InitQueue(),
-		DbMap:  dbMap,
-		Ec2svc: ec2.InitAWS(),
+		Queue:       jobmng.InitQueue(),
+		DbMap:       dbMap,
+		Ec2svc:      ec2.InitAWS(),
+		DstJsonFile: &jobmng.FileOpenCloseWriter{},
 	}
 	fmt.Println(jobmnger)
 	// TODO: graceful shutdown when SIGINT

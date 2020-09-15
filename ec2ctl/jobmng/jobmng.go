@@ -9,7 +9,7 @@ import (
 	"github.com/RollMan/ac2manager/ec2ctl/ec2"
 	"github.com/go-gorp/gorp"
 	_ "github.com/go-sql-driver/mysql"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"time"
@@ -33,6 +33,34 @@ type ruleFile struct {
 	filename string
 }
 
+type OpenCloseWriter interface {
+	io.WriteCloser
+	OpenFile(string, int, os.FileMode) error
+}
+
+type FileOpenCloseWriter struct {
+	File *os.File
+}
+
+func (f *FileOpenCloseWriter) OpenFile(name string, flag int, perm os.FileMode) error {
+	var err error
+	f.File, err = os.OpenFile(name, flag, perm)
+	return err
+}
+
+func (f *FileOpenCloseWriter) Write(p []byte) (int, error) {
+	n, err := f.File.Write(p)
+	if err != nil {
+		return 0, err
+	}
+	return n, nil
+}
+
+func (f *FileOpenCloseWriter) Close() error {
+	err := f.File.Close()
+	return err
+}
+
 type JobmngerAPI interface {
 	FindJobs(t time.Time)
 	RunQueue()
@@ -41,9 +69,10 @@ type JobmngerAPI interface {
 }
 
 type Jobmnger struct {
-	Queue  []JobQueue
-	DbMap  *gorp.DbMap
-	Ec2svc ec2.Ec2
+	Queue       []JobQueue
+	DbMap       *gorp.DbMap
+	Ec2svc      ec2.Ec2
+	DstJsonFile OpenCloseWriter
 }
 
 func InitQueue() []JobQueue {
@@ -112,15 +141,22 @@ func (j *Jobmnger) RunInstanse(virtualQueue []JobQueue) error {
 			}
 
 			for _, r := range rules {
+				conf_path := conf_dir_path + "/" + r.filename
+				err := j.DstJsonFile.OpenFile(conf_path, os.O_WRONLY|os.O_CREATE, 0644)
+				if err != nil {
+					return fmt.Errorf("Failed to open file %s: %v\n", conf_path, err)
+				}
 				json, err := json.Marshal(r.rule)
 				if err != nil {
+					j.DstJsonFile.Close()
 					return fmt.Errorf("Failed to marshal a json: %s.\n%v", r.filename, r.rule)
 				}
-				conf_path := conf_dir_path + "/" + r.filename
-				err = ioutil.WriteFile(conf_path, json, 0644)
+				_, err = j.DstJsonFile.Write(json)
 				if err != nil {
+					j.DstJsonFile.Close()
 					return fmt.Errorf("Failed to write a json of %s.\n%v", conf_path, json)
 				}
+				j.DstJsonFile.Close()
 			}
 
 			j.Ec2svc.StartInstance(id)
