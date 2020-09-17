@@ -4,6 +4,7 @@ github.com/DATA-DOG/go-sqlmock v1.5.0 h1:Shsta01QNfFxHCfpW6YH2STWB0MudeXXEWMr20O
 github.com/DATA-DOG/go-sqlmock v1.5.0/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/PuerkitoBio/goquery v1.5.1/go.mod h1:GsLWisAFVj4WgDibEWF4pvYnkVQBpKBKeU+7zCJoLcc=
+github.com/RollMan/ac2manager v0.0.0-20200808055404-043583978010 h1:WEr9K9v3UUsX7R4fNyYZmowR5gtnvPU411O07iSCe/Y=
 github.com/RollMan/ac2manager/app v0.0.0-20200808055404-043583978010 h1:1OYS9KKJHpY615DAddJmvrQx5FnsNmHmNa2G5QjX3gI=
 github.com/RollMan/ac2manager/app v0.0.0-20200808055404-043583978010/go.mod h1:WfNf9ylJIhe0CXG1XF9Ag/O6QGZv6Hqz13k1zyK53H4=
 github.com/a8m/expect v1.0.0/go.mod h1:4IwSCMumY49ScypDnjNbYEjgVeqy1/U2cEs3Lat96eA=

@@ -36,47 +36,47 @@ func main() {
 		Ec2svc:      ec2.InitAWS(),
 		DstJsonFile: &jobmng.FileOpenCloseWriter{},
 	}
-	fmt.Println(jobmnger)
 	// TODO: graceful shutdown when SIGINT
-	cron(jobmnger)
-}
-
-func cron(jobmnger jobmng.Jobmnger) {
 	prev := time.Now()
 	for {
-		var now time.Time
-		for {
-			sleep_by := prev.Add(time.Minute * time.Duration(1)).Truncate(time.Minute)
-			sleepUntilNextMinute(sleep_by)
+		prev = cron(&jobmnger, prev)
+	}
+}
 
-			now = time.Now()
-			now_unixminute := int(now.Unix() / 60)
-			prev_unixminute := int(now.Unix() / 60)
-			if now_unixminute != prev_unixminute {
+func cron(jobmnger jobmng.JobmngerAPI, prev time.Time) time.Time {
+	var now time.Time
+	sleep_by := prev.Add(time.Minute * time.Duration(1)).Truncate(time.Minute)
+	for {
+		sleepUntilNextMinute(sleep_by)
+
+		now = time.Now()
+		now_unixminute := int(now.Unix() / 60)
+		prev_unixminute := int(prev.Unix() / 60)
+		if now_unixminute != prev_unixminute {
+			break
+		}
+	}
+
+	timeDiff := now.Sub(prev)
+	timeDiffMinute := int(timeDiff.Minutes())
+
+	if timeDiffMinute == 1 {
+		prev = now
+		jobmnger.FindJobs(prev)
+	} else {
+		now_unixminute := int(now.Unix() / 60)
+
+		for {
+			prev = prev.Add(time.Minute)
+			jobmnger.FindJobs(prev)
+			prev_unixminute := int(prev.Unix() / 60)
+			if !(prev_unixminute < now_unixminute) {
 				break
 			}
 		}
-
-		timeDiff := now.Sub(prev)
-		timeDiffMinute := int(timeDiff.Minutes())
-
-		if timeDiffMinute == 1 {
-			prev = now
-			jobmnger.FindJobs(prev)
-		} else {
-			now_unixminute := int(now.Unix() / 60)
-
-			for {
-				prev = prev.Add(time.Minute)
-				jobmnger.FindJobs(prev)
-				prev_unixminute := int(prev.Unix() / 60)
-				if !(prev_unixminute < now_unixminute) {
-					break
-				}
-			}
-		}
-		jobmnger.RunQueue()
 	}
+	jobmnger.RunQueue()
+	return prev
 }
 
 func sleepUntilNextMinute(target time.Time) {

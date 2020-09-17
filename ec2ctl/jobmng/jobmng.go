@@ -65,7 +65,7 @@ type JobmngerAPI interface {
 	FindJobs(t time.Time)
 	RunQueue()
 	RunInstanse(virtualQueue []JobQueue) error
-	selectJobsByDate(time.Time) []models.Event
+	SelectJobsByDate(time.Time) []models.Event
 }
 
 type Jobmnger struct {
@@ -83,7 +83,7 @@ func InitQueue() []JobQueue {
 
 func (j *Jobmnger) FindJobs(t time.Time) {
 	targetInMinute := t.Truncate(time.Minute)
-	events := j.selectJobsByDate(targetInMinute)
+	events := j.SelectJobsByDate(targetInMinute)
 	for _, e := range events {
 		j.Queue = append(j.Queue, JobQueue{Start, e})
 		extra := time.Minute * 10
@@ -94,7 +94,7 @@ func (j *Jobmnger) FindJobs(t time.Time) {
 	}
 }
 
-func (j *Jobmnger) selectJobsByDate(t time.Time) []models.Event {
+func (j *Jobmnger) SelectJobsByDate(t time.Time) []models.Event {
 	var events []models.Event
 	t1 := t
 	t2 := t.Add(time.Minute)
