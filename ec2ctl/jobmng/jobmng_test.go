@@ -171,28 +171,25 @@ func (m *mockedInstanceForTestRunInstance) StopInstances(i *ec2.StopInstancesInp
 }
 
 type mockedDstJson struct {
-	name   string
-	flag   int
-	perm   os.FileMode
-	file   []byte
-	opened bool
+	currentName string
+	file        map[string][]byte
+	opened      bool
 }
 
 func (m *mockedDstJson) OpenFile(name string, flag int, perm os.FileMode) error {
-	m.name = name
-	m.flag = flag
-	m.perm = perm
+	m.currentName = name
 	m.opened = true
 	return nil
 }
 
 func (m *mockedDstJson) Write(p []byte) (int, error) {
-	m.file = p
+	m.file[m.currentName] = p
 	return len(p), nil
 }
 
 func (m *mockedDstJson) Close() error {
 	m.opened = false
+	m.currentName = ""
 	return nil
 }
 
@@ -220,8 +217,11 @@ func TestRunInstance(t *testing.T) {
 				{
 					JobType: Start,
 					Event: models.Event{
-						Id:        0,
-						Startdate: time1,
+						Id:                        0,
+						Startdate:                 time1,
+						Track:                     "monza_2019",
+						WeatherRandomness:         3,
+						IsRefuellingAllowedInRace: true,
 					},
 				},
 			},
@@ -243,8 +243,9 @@ func TestRunInstance(t *testing.T) {
 				{
 					JobType: Stop,
 					Event: models.Event{
-						Id:        45,
-						Startdate: time1,
+						Id:           45,
+						Startdate:    time1,
+						TyreSetCount: 3,
 					},
 				},
 			},
@@ -272,13 +273,22 @@ func TestRunInstance(t *testing.T) {
 					RespStop:  c.RespStop,
 				},
 			},
-			DstJsonFile: &mockedDstJson{},
+			DstJsonFile: &mockedDstJson{file: make(map[string][]byte, 0)},
 		}
 
 		err := jobmnger.RunInstanse(c.virtualQueue)
 
 		if err != nil {
 			t.Errorf("Error in test %s: %v\n", c.description, err)
+		}
+
+		value, ok := jobmnger.DstJsonFile.(*mockedDstJson)
+		if !ok {
+			t.Errorf("Failed type assertion\n")
+		}
+
+		for filename, content := range value.file {
+			t.Logf("name: %s\ncontent: %s\n", filename, content)
 		}
 	}
 }
