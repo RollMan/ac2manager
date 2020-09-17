@@ -156,14 +156,14 @@ type mockedInstanceForTestRunInstance struct {
 	RespStop  ec2.StopInstancesOutput
 }
 
-func (m *mockedInstanceForTestRunInstance) StartInstance(i *ec2.StartInstancesInput) (*ec2.StartInstancesOutput, error) {
+func (m *mockedInstanceForTestRunInstance) StartInstances(i *ec2.StartInstancesInput) (*ec2.StartInstancesOutput, error) {
 	if *i.DryRun == true {
 		return nil, awserr.New("DryRunOperation", "", nil)
 	}
 	return &m.RespStart, nil
 }
 
-func (m *mockedInstanceForTestRunInstance) StopInstance(i *ec2.StopInstancesInput) (*ec2.StopInstancesOutput, error) {
+func (m *mockedInstanceForTestRunInstance) StopInstances(i *ec2.StopInstancesInput) (*ec2.StopInstancesOutput, error) {
 	if *i.DryRun == true {
 		return nil, awserr.New("DryRunOperation", "", nil)
 	}
@@ -267,7 +267,7 @@ func TestRunInstance(t *testing.T) {
 			Queue: InitQueue(),
 			DbMap: nil,
 			Ec2svc: ec2svc.Ec2{
-				Svc: mockedInstanceForTestRunInstance{
+				Svc: &mockedInstanceForTestRunInstance{
 					RespStart: c.RespStart,
 					RespStop:  c.RespStop,
 				},
