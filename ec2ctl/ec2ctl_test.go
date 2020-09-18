@@ -4,6 +4,9 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/RollMan/ac2manager/app/models"
 	"github.com/RollMan/ac2manager/ec2ctl/jobmng"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/go-gorp/gorp"
 	"os"
 	"testing"
@@ -18,6 +21,24 @@ func logTimeOfCalls(title string, times []time.Time, tst *testing.T) {
 		}
 		tst.Logf(t.Format("2006-01-02T15:04:05.000"))
 	}
+}
+
+type mockedEc2Svc struct {
+	ec2iface.EC2API
+}
+
+func (m *mockedEc2Svc) StartInstances(i *ec2.StartInstancesInput) (*ec2.StartInstancesOutput, error) {
+	if *i.DryRun == true {
+		return nil, awserr.New("DryRunOperation", "", nil)
+	}
+	return &ec2.StartInstancesOutput{}, nil
+}
+
+func (m *mockedEc2Svc) StopInstances(i *ec2.StopInstancesInput) (*ec2.StopInstancesOutput, error) {
+	if *i.DryRun == true {
+		return nil, awserr.New("DryRunOperation", "", nil)
+	}
+	return &ec2.StopInstancesOutput{}, nil
 }
 
 type mockedJobmnger00 struct {
@@ -61,13 +82,16 @@ func (m *mockedJobmnger01) RunInstanse(virtualQueue []jobmng.JobQueue) error {
 	return nil
 }
 
-type mockedDstJson struct{}
+type mockedDstJson struct {
+	WriteTimes []time.Time
+}
 
 func (m *mockedDstJson) OpenFile(name string, flag int, perm os.FileMode) error {
 	return nil
 }
 
 func (m *mockedDstJson) Write(p []byte) (int, error) {
+	m.WriteTimes = append(m.WriteTimes, time.Now())
 	return 0, nil
 }
 
@@ -85,6 +109,7 @@ func TestCron01(t *testing.T) {
 	jobmnger := &mockedJobmnger01{}
 	jobmnger.DbMap = dbMap
 	jobmnger.DstJsonFile = &mockedDstJson{}
+	jobmnger.Ec2svc.Svc = &mockedEc2Svc{}
 	defer dbMap.Db.Close()
 
 	now := time.Now()
