@@ -34,16 +34,16 @@ func (ec2svc *Ec2) StartInstance(instanceId string) {
 		},
 		DryRun: aws.Bool(true),
 	}
-	result, err := ec2svc.Svc.StartInstances(input)
+	_, err := ec2svc.Svc.StartInstances(input)
 	awsErr, ok := err.(awserr.Error)
 
 	if ok && awsErr.Code() == "DryRunOperation" {
 		input.DryRun = aws.Bool(false)
-		result, err = ec2svc.Svc.StartInstances(input)
+		_, err = ec2svc.Svc.StartInstances(input)
 		if err != nil {
 			log.Fatalln(err)
 		} else {
-			log.Println(result.StartingInstances)
+			// log.Println(result.StartingInstances)
 		}
 	} else {
 		log.Fatalln(err)

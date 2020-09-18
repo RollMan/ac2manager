@@ -73,13 +73,8 @@ func TestCron00(t *testing.T) {
 }
 
 type mockedJobmnger01 struct {
-	*jobmng.Jobmnger
+	jobmng.Jobmnger
 	timeOfRunInstanceCall []time.Time
-}
-
-func (m *mockedJobmnger01) RunInstanse(virtualQueue []jobmng.JobQueue) error {
-	m.timeOfRunInstanceCall = append(m.timeOfRunInstanceCall, time.Now())
-	return nil
 }
 
 type mockedDstJson struct {
@@ -100,6 +95,7 @@ func (m *mockedDstJson) Close() error {
 }
 
 func TestCron01(t *testing.T) {
+	const fmt = "2006-01-02T15:04:05"
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Errorf("Error %s occuered when opening db mock", err)
@@ -119,7 +115,7 @@ func TestCron01(t *testing.T) {
 
 	emptyRow := sqlmock.NewRows([]string{"id", "startdate"})
 	row := sqlmock.NewRows([]string{"id", "startdate"}).AddRow(123, target_time)
-	for i := 0; i < 4; i++ {
+	for i := 0; i < 5; i++ {
 		mock.ExpectQuery(`SELECT \* FROM events`).
 			WillReturnRows(emptyRow)
 	}
@@ -127,14 +123,27 @@ func TestCron01(t *testing.T) {
 		WithArgs(target_time, target_time2).
 		WillReturnRows(row)
 
+	mock.ExpectQuery(`SELECT \* FROM events`).
+		WillReturnRows(emptyRow)
+
 	cnt := 0
 	prev := time.Now()
-	for len(jobmnger.timeOfRunInstanceCall) == 0 {
+	for {
 		prev = cron(jobmnger, prev)
-		t.Logf("loop %d, endtime: %v", cnt, end)
+		t.Logf("loop: %d, prev: %s, end: %s\n", cnt, prev.Format(fmt), end.Format(fmt))
+		cnt++
 		if time.Now().After(end) {
 			break
 		}
 	}
-	logTimeOfCalls("RunInstance", jobmnger.timeOfRunInstanceCall, t)
+
+	wt := jobmnger.DstJsonFile.(*mockedDstJson).WriteTimes[0]
+	if (target_time.Add(-15 * time.Second)).Before(wt) && wt.Before(target_time.Add(15*time.Second)) {
+	} else {
+		t.Errorf("The difference of expected startinstance time is too big:\ntarget:%s, result:%s",
+			target_time.Format(fmt), wt.Format(fmt))
+	}
+
+	t.Log(wt.Format(fmt))
+
 }
