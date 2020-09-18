@@ -114,14 +114,18 @@ func TestCron01(t *testing.T) {
 
 	now := time.Now()
 	target_time := now.Add(5 * time.Minute).Truncate(time.Minute)
-	end := target_time.Add(30 * time.Second)
-	// target_time2 := target_time.Add(time.Minute)
+	target_time2 := target_time.Add(time.Minute)
+	end := target_time.Add(time.Minute + 5*time.Second)
 
-	row := sqlmock.NewRows([]string{"id", "startdate"}).AddRow(0, target_time)
-	for i := 0; i < 60*8; i++ {
+	emptyRow := sqlmock.NewRows([]string{"id", "startdate"})
+	row := sqlmock.NewRows([]string{"id", "startdate"}).AddRow(123, target_time)
+	for i := 0; i < 4; i++ {
 		mock.ExpectQuery(`SELECT \* FROM events`).
-			WillReturnRows(row)
+			WillReturnRows(emptyRow)
 	}
+	mock.ExpectQuery(`SELECT \* FROM events`).
+		WithArgs(target_time, target_time2).
+		WillReturnRows(row)
 
 	cnt := 0
 	prev := time.Now()
