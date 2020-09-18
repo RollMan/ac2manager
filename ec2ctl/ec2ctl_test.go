@@ -115,7 +115,7 @@ func TestCron01(t *testing.T) {
 
 	emptyRow := sqlmock.NewRows([]string{"id", "startdate"})
 	row := sqlmock.NewRows([]string{"id", "startdate"}).AddRow(123, target_time)
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 4; i++ {
 		mock.ExpectQuery(`SELECT \* FROM events`).
 			WillReturnRows(emptyRow)
 	}
@@ -123,6 +123,8 @@ func TestCron01(t *testing.T) {
 		WithArgs(target_time, target_time2).
 		WillReturnRows(row)
 
+	mock.ExpectQuery(`SELECT \* FROM events`).
+		WillReturnRows(emptyRow)
 	mock.ExpectQuery(`SELECT \* FROM events`).
 		WillReturnRows(emptyRow)
 
