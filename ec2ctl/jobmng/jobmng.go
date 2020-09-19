@@ -98,8 +98,6 @@ func (j *Jobmnger) SelectJobsByDate(t time.Time) []models.Event {
 	var events []models.Event
 	t1 := t
 	t2 := t.Add(time.Minute)
-	// REMOVEME
-	log.Printf("query. time: %s", t.Format("2006-01-02T15:04:05"))
 	_, err := j.DbMap.Select(&events, "SELECT * FROM events WHERE CONVERT(?, DATETIME) <= events.startdate and events.startdate < CONVERT(?, DATETIME)", t1, t2)
 
 	if err != nil {

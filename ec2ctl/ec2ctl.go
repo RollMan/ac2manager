@@ -57,6 +57,11 @@ func cron(jobmnger jobmng.JobmngerAPI, prev time.Time) time.Time {
 		}
 	}
 
+	// FIXME: The first block (`timeDiffMinute == 1`) never runs.
+	// `int(now - prev)` should be >= 1 in, for example, now = 15:05:03 and prev = 15:04:30.
+	// However, int truncation produces 0.
+
+	// This is inspired by `cron`, but only later block will work the system properly.
 	timeDiff := now.Sub(prev)
 	timeDiffMinute := int(timeDiff.Minutes())
 

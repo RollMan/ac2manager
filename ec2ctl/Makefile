@@ -4,8 +4,10 @@ CREATION_TIME := $(shell docker inspect $(IMAGE_NAME) -f {{.Created}} | xargs da
 LATEST_MOD_TIME := $(shell echo $(SRC) | xargs -n 1 date +%s -r | awk '{if(m<$$1) m=$$1} END{print m}')
 GOPATH := /go/src/github.com/RollMan/ac2manager/ec2ctl
 
+TESTARG := -v -timeout 20m
+
 build: $(SRC)
-	if [ $(LATEST_MOD_TIME) -ge $(CREATION_TIME) ]; then \
+	if [ -z $(CREATION_TIME) ] || [ $(LATEST_MOD_TIME) -ge $(CREATION_TIME) ]; then \
 		docker build . -t $(IMAGE_NAME); \
 		else \
 		echo "Docker container image is ready up to date."; \
@@ -15,13 +17,13 @@ build-vol: $(SRC)
 	docker run --rm -it ec2ctl go build $(PKG)
 
 test: build
-	docker run --env-file ../.env --rm -it ec2ctl go test $(PKG)
+	docker run --env-file ../.env --rm -it ec2ctl go test $(TESTARG) $(PKG)
 
 test-build:
-	docker run -v$(PWD):$(GOPATH) --rm -it ec2ctl go test -c $(PKG)
+	docker run -v$(PWD):$(GOPATH) --rm -it ec2ctl go test -c $(TESTARG) $(PKG)
 
 test-vol:
-	docker run -v$(PWD):$(GOPATH) --rm -it ec2ctl go test $(PKG)
+	docker run -v$(PWD):$(GOPATH) --rm -it ec2ctl go test $(TESTARG) $(PKG)
 
 test-dbg:
 	docker run -v$(PWD):$(GOPATH) --rm -it ec2ctl dlv test $(PKG)

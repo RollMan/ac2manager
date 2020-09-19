@@ -87,16 +87,16 @@ func (ec2svc *Ec2) StopInstance(instanceId string) {
 		},
 		DryRun: aws.Bool(true),
 	}
-	result, err := ec2svc.Svc.StopInstances(input)
+	_, err := ec2svc.Svc.StopInstances(input)
 	awsErr, ok := err.(awserr.Error)
 
 	if ok && awsErr.Code() == "DryRunOperation" {
 		input.DryRun = aws.Bool(false)
-		result, err = ec2svc.Svc.StopInstances(input)
+		_, err = ec2svc.Svc.StopInstances(input)
 		if err != nil {
 			log.Fatalln(err)
 		} else {
-			log.Println(result.StoppingInstances)
+			// log.Println(result.StoppingInstances)
 		}
 	} else {
 		log.Fatalln(err)
