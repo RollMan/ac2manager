@@ -78,14 +78,18 @@ type mockedJobmnger01 struct {
 }
 
 type mockedDstJson struct {
-	WriteTimes []time.Time
+	WriteTimes  []time.Time
+	CurrentName string
+	Files       map[string]string
 }
 
 func (m *mockedDstJson) OpenFile(name string, flag int, perm os.FileMode) error {
+	m.CurrentName = name
 	return nil
 }
 
 func (m *mockedDstJson) Write(p []byte) (int, error) {
+	m.Files[m.CurrentName] = string(p)
 	m.WriteTimes = append(m.WriteTimes, time.Now())
 	return 0, nil
 }
@@ -104,7 +108,7 @@ func TestCron01(t *testing.T) {
 	dbMap.AddTableWithName(models.Event{}, "events").SetKeys(true, "id")
 	jobmnger := &mockedJobmnger01{}
 	jobmnger.DbMap = dbMap
-	jobmnger.DstJsonFile = &mockedDstJson{}
+	jobmnger.DstJsonFile = &mockedDstJson{Files: make(map[string]string)}
 	jobmnger.Ec2svc.Svc = &mockedEc2Svc{}
 	defer dbMap.Db.Close()
 
@@ -114,7 +118,7 @@ func TestCron01(t *testing.T) {
 	end := target_time.Add(time.Minute + 5*time.Second)
 
 	emptyRow := sqlmock.NewRows([]string{"id", "startdate"})
-	row := sqlmock.NewRows([]string{"id", "startdate"}).AddRow(123, target_time)
+	row := sqlmock.NewRows([]string{"id", "startdate", "track", "Q_hourOfDay", "isMandatoryPitstopRefuellingRequired", "tyreSetCount"}).AddRow(123, target_time, "zolder_2018", 15, true, 10)
 	for i := 0; i < 4; i++ {
 		mock.ExpectQuery(`SELECT \* FROM events`).
 			WillReturnRows(emptyRow)
@@ -147,5 +151,6 @@ func TestCron01(t *testing.T) {
 	}
 
 	t.Log(wt.Format(fmt))
+	t.Log(jobmnger.DstJsonFile.(*mockedDstJson).Files)
 
 }
