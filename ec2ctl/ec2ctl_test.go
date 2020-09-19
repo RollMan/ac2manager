@@ -1,3 +1,7 @@
+/*
+ * TODO: mock time.Time or the test takes 10 or more minutes
+ */
+
 package main
 
 import (
