@@ -12,7 +12,7 @@ COPY . /go/src/github.com/RollMan/ac2manager/app
 
 # Build javascripts by webpack
 WORKDIR /go/src/github.com/RollMan/ac2manager/app/static
-RUN npm run build
+RUN npm  install -D webpack webpack-cli && npm run build
 
 # Build application in Golang
 WORKDIR /go/src/github.com/RollMan/ac2manager/app
