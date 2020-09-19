@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/RollMan/ac2manager/app/models"
+	"github.com/RollMan/ac2manager/ec2ctl/confjson"
 	"github.com/RollMan/ac2manager/ec2ctl/jobmng"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -152,6 +154,37 @@ func TestCron01(t *testing.T) {
 
 	t.Log(wt.Format(fmt))
 	t.Log(jobmnger.DstJsonFile.(*mockedDstJson).Files)
+
+	json_files := jobmnger.DstJsonFile.(*mockedDstJson).Files
+	assistRules := confjson.AssistRules{}
+	err = json.Unmarshal([]byte(json_files["/opt/ac2manager//assistRules.json"]), &assistRules)
+	if err != nil {
+		t.Error(err)
+	}
+	settings := confjson.Settings{}
+	err = json.Unmarshal([]byte(json_files["/opt/ac2manager//settings.json"]), &settings)
+	if err != nil {
+		t.Error(err)
+	}
+	configuration := confjson.Configuration{}
+	json.Unmarshal([]byte(json_files["/opt/ac2manager//settings.json"]), &configuration)
+	if err != nil {
+		t.Error(err)
+	}
+	event := confjson.Event{}
+	json.Unmarshal([]byte(json_files["/opt/ac2manager//event.json"]), &event)
+	if err != nil {
+		t.Error(err)
+	}
+	eventRules := confjson.EventRules{}
+	json.Unmarshal([]byte(json_files["/opt/ac2manager//eventRules.json"]), &eventRules)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !(event.Track == "zolder_2018" && event.Sessions[1].HourOfDay == 15 && eventRules.IsMandatoryPitstopRefuellingRequired == true && eventRules.TyreSetCount == 10) {
+		t.Errorf("result jsons are not correct:\nevent.Track: %s, Q_hourOfDay: %d, refuelling required: %T, tyresetcount: %d\n", event.Track, event.Sessions[1].HourOfDay, eventRules.IsMandatoryPitstopRefuellingRequired, eventRules.TyreSetCount)
+	}
 
 }
 
