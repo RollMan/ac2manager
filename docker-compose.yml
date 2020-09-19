@@ -19,5 +19,12 @@ services:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       # Specify the above two passwords in `.env` file.
 
+  ec2ctl:
+    env_file:
+      ./.env
+    build: ./ec2ctl
+    volumes:
+      - "/opt/ac2manager:/opt/ac2manager"
+
 volumes:
   db-data:
