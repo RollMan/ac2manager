@@ -1,0 +1,13 @@
+[Unit]
+Description=Fetch configuration JSON and launch the acc server
+After=network.target local-fs.target sysinit.target basic.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/launch_acc_server.sh
+Restart=always
+User=ubuntu
+WorkingDirectory=/home/ubuntu/server
+
+[Install]
+WantedBy=multi-user.target
