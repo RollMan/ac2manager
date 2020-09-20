@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eux
 
 ### Address of destination
 IP_ADDRESS=
