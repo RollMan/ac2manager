@@ -34,16 +34,17 @@ func (ec2svc *Ec2) StartInstance(instanceId string) {
 		},
 		DryRun: aws.Bool(true),
 	}
-	_, err := ec2svc.Svc.StartInstances(input)
+	result, err := ec2svc.Svc.StartInstances(input)
 	awsErr, ok := err.(awserr.Error)
 
 	if ok && awsErr.Code() == "DryRunOperation" {
 		input.DryRun = aws.Bool(false)
-		_, err = ec2svc.Svc.StartInstances(input)
+		result, err = ec2svc.Svc.StartInstances(input)
 		if err != nil {
 			log.Fatalln(err)
 		} else {
-			// log.Println(result.StartingInstances)
+			log.Printf("EC2 instance (id: %s) launched\n", instanceId)
+			log.Println(result.StartingInstances)
 		}
 	} else {
 		log.Fatalln(err)
@@ -87,16 +88,17 @@ func (ec2svc *Ec2) StopInstance(instanceId string) {
 		},
 		DryRun: aws.Bool(true),
 	}
-	_, err := ec2svc.Svc.StopInstances(input)
+	result, err := ec2svc.Svc.StopInstances(input)
 	awsErr, ok := err.(awserr.Error)
 
 	if ok && awsErr.Code() == "DryRunOperation" {
 		input.DryRun = aws.Bool(false)
-		_, err = ec2svc.Svc.StopInstances(input)
+		result, err = ec2svc.Svc.StopInstances(input)
 		if err != nil {
 			log.Fatalln(err)
 		} else {
-			// log.Println(result.StoppingInstances)
+			log.Printf("EC2 instance (id: %s) stopped\n", instanceId)
+			log.Println(result.StoppingInstances)
 		}
 	} else {
 		log.Fatalln(err)

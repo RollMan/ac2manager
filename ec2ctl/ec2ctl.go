@@ -80,6 +80,7 @@ func cron(jobmnger jobmng.JobmngerAPI, prev time.Time) time.Time {
 			}
 		}
 	}
+	log.Printf("Cron waked up. prev: %s,\nQueue: %v\n", prev.Format("2006-01-02T15:04:05"), jobmnger.Queue)
 	jobmnger.RunQueue()
 	return prev
 }
