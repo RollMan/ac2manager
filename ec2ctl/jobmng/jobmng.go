@@ -66,6 +66,7 @@ type JobmngerAPI interface {
 	RunQueue()
 	RunInstanse(virtualQueue []JobQueue) error
 	SelectJobsByDate(time.Time) []models.Event
+	QueueToString() string
 }
 
 type Jobmnger struct {
@@ -79,6 +80,29 @@ func InitQueue() []JobQueue {
 	var queue []JobQueue
 	queue = make([]JobQueue, 0)
 	return queue
+}
+
+func (j *Jobmnger) QueueToString() string {
+	var res string
+	for i, q := range j.Queue {
+		res += fmt.Sprintf("\n\n========= |%d| ============", i)
+		res += "JobType: "
+		if q.JobType == Start {
+			res += "Start\n"
+		} else if q.JobType == Stop {
+			res += "Stop\n"
+		} else {
+			res += fmt.Sprintf("[ERR]Unknown: %d\n", q.JobType)
+		}
+
+		b, err := json.Marshal(q.Event)
+		if err != nil {
+			res += fmt.Sprintf("[ERR]Failed to marshal JobMnger.Queue[%d].Event\n%v\n", i, q.Event)
+		} else {
+			res += string(b)
+		}
+	}
+	return res
 }
 
 func (j *Jobmnger) FindJobs(t time.Time) {
