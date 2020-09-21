@@ -39,7 +39,7 @@ func TestSelectJobsByDate(t *testing.T) {
 			WithArgs(target_time, target_Time2).
 			WillReturnRows(row)
 
-		events := jobmnger.selectJobsByDate(target_time)
+		events := jobmnger.SelectJobsByDate(target_time)
 		if events[0] != expected {
 			t.Errorf("invalid result")
 		}
@@ -50,7 +50,7 @@ func TestSelectJobsByDate(t *testing.T) {
 			WithArgs(target_time, target_Time2).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "startdate"}))
 
-		events := jobmnger.selectJobsByDate(target_time)
+		events := jobmnger.SelectJobsByDate(target_time)
 		if len(events) != 0 {
 			t.Errorf("invalid result")
 		}
