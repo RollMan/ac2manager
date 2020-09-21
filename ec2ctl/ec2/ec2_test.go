@@ -41,7 +41,7 @@ func TestStartInstance(t *testing.T) {
 	}
 	for _, c := range cases {
 		ec2svc := Ec2{
-			svc: mockedInstance{Resp: c.Resp},
+			Svc: mockedInstance{Resp: c.Resp},
 		}
 		ec2svc.StartInstance("dummyinstanceid")
 	}
