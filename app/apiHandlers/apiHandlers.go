@@ -276,15 +276,34 @@ func AddRaceHandler(w http.ResponseWriter, r *http.Request, token *models.TokenC
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	var events []models.Event
-	_, err = db.DbMap.Select(&events, "SELECT * FROM events")
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+
+	{
+		var events []models.Event
+		_, err = db.DbMap.Select(&events, "SELECT hex(id), startdate FROM events")
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		for _, target := range events {
+			if event.Id == target.Id {
+				log.Println("UUID duplication.")
+				body := "UUID duplication happened."
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte(body))
+				return
+			}
+		}
 	}
 
 	{
+		var events []models.Event
+		_, err = db.DbMap.Select(&events, "SELECT * FROM events")
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		var isDupicate = false
 		var duplicating models.Event
 		for _, target := range events {
