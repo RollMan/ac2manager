@@ -48,6 +48,13 @@ func (u UUID) Value() (driver.Value, error) {
 	return u[:], nil
 }
 
+func (u UUID) MarshalJSON() ([]byte, error) {
+	uuid_str := (guuid.UUID(u)).String()
+	uuid_str = "\"" + uuid_str + "\""
+	res := []byte(uuid_str)
+	return res, nil
+}
+
 type Event struct {
 	Id                                   UUID      `json:"id" db:"id, primarykey"`
 	Startdate                            time.Time `json:"startdate" db:"startdate"`
