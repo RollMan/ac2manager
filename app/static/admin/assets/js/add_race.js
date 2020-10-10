@@ -1,3 +1,5 @@
+import { v4 } from 'uuid';
+
 (function(){
   const event_table_for_edit_div = document.querySelector('div#event_table_for_edit')
   const result_div = document.querySelector('div#event_add_result')
@@ -57,6 +59,9 @@
 
     const datetime_rfc3339 = date + "T" + time + ":00+09:00"
     form_data.append("startdate", datetime_rfc3339)
+
+    let uuid_str =v4()
+    form_data.append("id", uuid_str)
 
     fetch('/api/add_race', {
       method: 'POST',

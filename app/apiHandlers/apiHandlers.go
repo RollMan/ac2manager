@@ -1,8 +1,6 @@
 package apiHandlers
 
 import (
-  "strings"
-  "reflect"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -10,13 +8,15 @@ import (
 	"github.com/RollMan/ac2manager/app/db"
 	"github.com/RollMan/ac2manager/app/models"
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/mholt/binding"
 	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"reflect"
+	"strings"
 	"time"
-  "github.com/mholt/binding"
 )
 
 type TokenClaims struct {
@@ -61,7 +61,7 @@ func RacesHandler(w http.ResponseWriter, r *http.Request) {
 		body, err := json.Marshal(events)
 		if err != nil {
 			body := []byte(fmt.Sprintf("%v\n", err))
-			log.Println(body)
+			log.Println(string(body))
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write(body)
 			return
@@ -255,51 +255,72 @@ func checkUserPw(userid []byte, pw []byte) error {
 func AddRaceHandler(w http.ResponseWriter, r *http.Request, token *models.TokenClaims) {
 	var err error
 	var event models.Event
-  if strings.Contains(r.Header.Get("Content-Type"), "multipart/form-data") {
-    err := binding.Bind(r, &event)
-    if err != nil {
-      log.Println(err)
-      w.WriteHeader(http.StatusInternalServerError)
-      return
-    }
-    log.Println(r)
-    log.Println(event)
-  }else if r.Header.Get("Content-Type") == "application/json" {
-    err = ParseJSONBody(r, &event)
-    if err != nil {
-      log.Println(err)
-      w.WriteHeader(http.StatusInternalServerError)
-      return
-    }
-  }else {
-    log.Println("Invalid, not application/json request for login received.")
+	if strings.Contains(r.Header.Get("Content-Type"), "multipart/form-data") {
+		err := binding.Bind(r, &event)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		log.Println(r)
+		log.Println(event)
+	} else if r.Header.Get("Content-Type") == "application/json" {
+		err = ParseJSONBody(r, &event)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	} else {
+		log.Println("Invalid, not application/json request for login received.")
 		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	var events []models.Event
-	_, err = db.DbMap.Select(&events, "SELECT * FROM events")
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	var isDupicate = false
-	var duplicating models.Event
-	for _, target := range events {
-		adding_start := event.Startdate
-		adding_end := adding_start.Add(time.Minute * time.Duration(event.P_sessionDurationMinute+event.Q_sessionDurationMinute+event.R_sessionDurationMinute+5))
-		target_start := target.Startdate
-		target_end := target_start.Add(time.Minute * time.Duration(target.P_sessionDurationMinute+target.Q_sessionDurationMinute+target.R_sessionDurationMinute+5))
-		if isNoDuplicate(adding_start, adding_end, target_start, target_end) == false {
-			isDupicate = true
-			break
+	{
+		var events []models.Event
+		_, err = db.DbMap.Select(&events, "SELECT id, startdate FROM events")
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		for _, target := range events {
+			if event.Id == target.Id {
+				log.Println("UUID duplication.")
+				body := "UUID duplication happened."
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte(body))
+				return
+			}
 		}
 	}
-	if isDupicate {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(fmt.Sprintf("The adding event duration duplicates with the other event.\nadding: %v\ntarget: %v", event, duplicating)))
-		return
+
+	{
+		var events []models.Event
+		_, err = db.DbMap.Select(&events, "SELECT * FROM events")
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		var isDupicate = false
+		var duplicating models.Event
+		for _, target := range events {
+			adding_start := event.Startdate
+			adding_end := adding_start.Add(time.Minute * time.Duration(event.P_sessionDurationMinute+event.Q_sessionDurationMinute+event.R_sessionDurationMinute+5))
+			target_start := target.Startdate
+			target_end := target_start.Add(time.Minute * time.Duration(target.P_sessionDurationMinute+target.Q_sessionDurationMinute+target.R_sessionDurationMinute+5))
+			if isNoDuplicate(adding_start, adding_end, target_start, target_end) == false {
+				isDupicate = true
+				break
+			}
+		}
+		if isDupicate {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(fmt.Sprintf("The adding event duration duplicates with the other event.\nadding: %v\ntarget: %v", event, duplicating)))
+			return
+		}
 	}
 	err = db.DbMap.Insert(&event)
 
@@ -360,47 +381,47 @@ func RemoveRaceHandler(w http.ResponseWriter, r *http.Request, token *models.Tok
 	w.Write([]byte(body))
 }
 
-func SchemaHandler(w http.ResponseWriter, r *http.Request){
-  var event models.Event
-  t := reflect.TypeOf(event)
+func SchemaHandler(w http.ResponseWriter, r *http.Request) {
+	var event models.Event
+	t := reflect.TypeOf(event)
 
-  schema := make(map[string]string) // [keyname]type
+	schema := make(map[string]string) // [keyname]type
 
-  for i := 0; i < t.NumField(); i++ {
-    field := t.Field(i)
-    json_keyname := field.Tag.Get("json")
-    typename := field.Type.Name()
-    schema[json_keyname] = typename
-  }
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		json_keyname := field.Tag.Get("json")
+		typename := field.Type.Name()
+		schema[json_keyname] = typename
+	}
 
-  body,err := json.Marshal(schema)
-  if err != nil {
-    log.Println(err)
-    w.WriteHeader(http.StatusInternalServerError)
-    return
-  }
+	body, err := json.Marshal(schema)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
-  w.WriteHeader(http.StatusOK)
-  w.Write([]byte(body))
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(body))
 }
 
-func RaceByIdHandler(w http.ResponseWriter, r *http.Request){
+func RaceByIdHandler(w http.ResponseWriter, r *http.Request) {
 	var event models.Event
-  if r.Header.Get("Content-Type") == "" {
-    err := binding.Bind(r, &event)
-    if err != nil {
-      log.Println(err)
-      w.WriteHeader(http.StatusInternalServerError)
-      return
-    }
-  }else {
-    log.Println("Invalid content type.")
+	if r.Header.Get("Content-Type") == "" {
+		err := binding.Bind(r, &event)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	} else {
+		log.Println("Invalid content type.")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	{
-    id := event.Id
+		id := event.Id
 		err := db.DbMap.SelectOne(&event, "SELECT * FROM events WHERE id = ?;", id)
 
 		if err != nil {

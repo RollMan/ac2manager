@@ -1,24 +1,29 @@
 (function(){
   const event_table_div = document.querySelector('div#event-tables-div')
+  const upcoming_race_div = document.querySelector('div#error-div')
   function show_all_events (){
     fetch('/api/races', {
       method: 'GET',
       headers: {'Content-Type': 'application/json'}
     })
     .then(response => {
-        if (!response.ok) {
+      if (!response.ok) {
+        response.text().then(text => {
           let body = "";
           if (400 <= response.status && response.status < 500){
             body = "<p>Client Error.</p>"
           }else if(500 <= response.status && response.status < 600){
             body = "<p>Internal Server Error.</p>"
+            body += `<p>${text}</p>`
           }else{
             body = "<p>Unknown Error: " + response.status + ".</p>"
           }
           upcoming_race_div.innerHTML = body;
           throw new Error("Server Unavailable.")
-        }
+        })
+      }else{
         return response.json();
+      }
     }).then(response => {
       let body = "";
       for (let e_idx = 0; e_idx < response.length; e_idx++){
