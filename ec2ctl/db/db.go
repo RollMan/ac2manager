@@ -23,11 +23,12 @@ func InitDB(dsn string) (*sql.DB, *gorp.DbMap) {
 	for {
 		err = db.Ping()
 		if err != nil {
-			fmt.Println("DB Ping Error. Retrying...")
+			log.Println("DB Ping Error. Retrying...")
 			log.Println(err)
 			time.Sleep(3 * time.Second)
 			continue
 		}
+		log.Println("DB OK.")
 		break
 	}
 	dbMap = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{}}
