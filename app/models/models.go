@@ -1,8 +1,10 @@
 package models
 
 import (
+	"database/sql/driver"
+	"fmt"
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/google/uuid"
+	guuid "github.com/google/uuid"
 	"github.com/mholt/binding"
 	"net/http"
 	"time"
@@ -25,8 +27,29 @@ type TokenClaims struct {
 	jwt.StandardClaims
 }
 
+type UUID guuid.UUID
+
+func (u *UUID) Scan(src interface{}) error {
+	var uuid_slice []byte
+	var ok bool
+	if uuid_slice, ok = src.([]byte); !ok {
+		return fmt.Errorf("DB returned not []byte value for UUID.\n")
+	}
+
+	if len(uuid_slice) != 16 {
+		return fmt.Errorf("uuid_slice must size of 16 but %d\n", len(uuid_slice))
+	}
+
+	copy(u[:], uuid_slice[0:16])
+	return nil
+}
+
+func (u UUID) Value() (driver.Value, error) {
+	return u[:], nil
+}
+
 type Event struct {
-	Id                                   uuid.UUID `json:"id" db:"id, primarykey"`
+	Id                                   UUID      `json:"id" db:"id, primarykey"`
 	Startdate                            time.Time `json:"startdate" db:"startdate"`
 	Track                                string    `json:"track" db:"track"`
 	WeatherRandomness                    int       `json:"weather_randomness" db:"weatherRandomness"`
@@ -53,11 +76,11 @@ func (e *Event) FieldMap(r *http.Request) binding.FieldMap {
 		&e.Id: binding.Field{
 			Form: "id",
 			Binder: func(fieldName string, formVals []string, errors binding.Errors) binding.Errors {
-				uuid, err := uuid.Parse(formVals[0])
+				uuid, err := guuid.Parse(formVals[0])
 				if err != nil {
 					errors = append(errors, err.(binding.Error))
 				}
-				e.Id = uuid
+				e.Id = [16]byte(uuid)
 				return errors
 			},
 		},

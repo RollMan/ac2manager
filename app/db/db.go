@@ -3,11 +3,12 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"github.com/RollMan/ac2manager/app/models"
 	"github.com/go-gorp/gorp"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
+	"os"
 	"time"
-	"github.com/RollMan/ac2manager/app/models"
 )
 
 var Db *sql.DB
@@ -31,5 +32,6 @@ func InitDB(dsn string) {
 		break
 	}
 	DbMap = &gorp.DbMap{Db: Db, Dialect: gorp.MySQLDialect{}}
-  DbMap.AddTableWithName(models.Event{}, "events").SetKeys(true, "id")
+	DbMap.AddTableWithName(models.Event{}, "events")
+	DbMap.TraceOn("[gorp]", log.New(os.Stdout, "myapp:", log.Lmicroseconds))
 }
