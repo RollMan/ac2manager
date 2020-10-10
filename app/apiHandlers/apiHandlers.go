@@ -279,7 +279,7 @@ func AddRaceHandler(w http.ResponseWriter, r *http.Request, token *models.TokenC
 
 	{
 		var events []models.Event
-		_, err = db.DbMap.Select(&events, "SELECT hex(id), startdate FROM events")
+		_, err = db.DbMap.Select(&events, "SELECT id, startdate FROM events")
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
