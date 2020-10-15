@@ -113,6 +113,13 @@ func (e *Event) FieldMap(r *http.Request) binding.FieldMap {
 	}
 }
 
+type StartStop struct {
+	Id       UUID      `db:"id, primarykey"`
+	EventID  UUID      `db:"eventid"`
+	Op       string    `db:"op"`
+	Datetime time.Time `db:"datetime"`
+}
+
 type NoSuchUserError struct{}
 type NoMatchingPasswordError struct{}
 
